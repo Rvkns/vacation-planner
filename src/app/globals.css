@@ -13,12 +13,10 @@
   /* Slate-900 */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #02040a;
-    /* Deepest Midnight Blue (almost black) */
-    --foreground: #f8fafc;
-  }
+.dark {
+  --background: #02040a;
+  /* Deepest Midnight Blue (almost black) */
+  --foreground: #f8fafc;
 }
 
 /* Glass Background Patterns */
