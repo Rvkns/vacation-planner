@@ -34,7 +34,7 @@ export default function LoginForm() {
                 router.push('/');
                 router.refresh();
             }
-        } catch (err) {
+        } catch {
             setError('Errore durante il login');
         } finally {
             setIsLoading(false);

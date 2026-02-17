@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
+import Image from 'next/image';
 
 const navigation = [
     { name: 'Dashboard', href: '/', icon: CalendarDays },
@@ -42,10 +43,12 @@ export default function Sidebar() {
                 {/* User Info Card */}
                 <div className="p-3 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
                     <div className="flex items-center gap-3">
-                        <img
+                        <Image
                             src={currentUser.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(currentUser.name)}`}
-                            alt={currentUser.name}
-                            className="w-10 h-10 rounded-full ring-2 ring-blue-500"
+                            alt={currentUser.name || 'User Avatar'}
+                            width={40}
+                            height={40}
+                            className="rounded-full ring-2 ring-blue-500"
                         />
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold truncate">{currentUser.name}</p>

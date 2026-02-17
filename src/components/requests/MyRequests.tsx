@@ -156,7 +156,7 @@ export default function MyRequests() {
                                 </label>
                                 <Select
                                     value={formData.type}
-                                    onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                                    onChange={(e) => setFormData({ ...formData, type: e.target.value as LeaveType })}
                                 >
                                     <option value="VACATION">Ferie</option>
                                     <option value="SICK">Malattia</option>
@@ -197,7 +197,7 @@ export default function MyRequests() {
                                 Nessuna richiesta ancora
                             </p>
                             <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                                Clicca su "Nuova Richiesta" per iniziare
+                                Clicca su &quot;Nuova Richiesta&quot; per iniziare
                             </p>
                         </CardContent>
                     </Card>

@@ -43,7 +43,7 @@ export default function RegisterForm() {
 
             // Redirect to login
             router.push('/login');
-        } catch (err) {
+        } catch {
             setError('Errore durante la registrazione');
             setIsLoading(false);
         }

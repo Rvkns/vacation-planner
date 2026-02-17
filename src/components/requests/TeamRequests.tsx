@@ -3,20 +3,21 @@
 import { useSession } from 'next-auth/react';
 import { leaveService } from '@/services/leaveService';
 import { userService } from '@/services/userService';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Check, X, Users as UsersIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
-import { LeaveRequest } from '@/types';
+import { LeaveRequest, User } from '@/types';
+import Image from 'next/image';
 
 export default function TeamRequests() {
     const { data: session } = useSession();
     const currentUser = session?.user;
     const [pendingRequests, setPendingRequests] = useState<LeaveRequest[]>([]);
-    const [allUsers, setAllUsers] = useState<any[]>([]);
+    const [allUsers, setAllUsers] = useState<User[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -116,7 +117,7 @@ export default function TeamRequests() {
                     </Card>
                 ) : (
                     pendingRequests.map((request) => {
-                        const user = allUsers.find((u: any) => u.id === request.userId);
+                        const user = allUsers.find((u) => u.id === request.userId);
                         const days = leaveService.calculateDays(request.startDate, request.endDate);
 
                         if (!user) return null;
@@ -127,10 +128,12 @@ export default function TeamRequests() {
                                     <div className="flex items-start justify-between gap-6">
                                         <div className="flex items-start gap-4 flex-1">
                                             {/* User Avatar */}
-                                            <img
-                                                src={user.avatarUrl || user.avatar || '/default-avatar.png'}
+                                            <Image
+                                                src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
                                                 alt={user.name}
-                                                className="w-12 h-12 rounded-full ring-2 ring-gray-200 dark:ring-gray-700"
+                                                width={48}
+                                                height={48}
+                                                className="rounded-full ring-2 ring-gray-200 dark:ring-gray-700"
                                             />
 
                                             {/* Request Details */}

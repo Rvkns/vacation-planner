@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { db } from '@/db';
-import { leaveRequests, users } from '@/db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { leaveRequests } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
 const createLeaveRequestSchema = z.object({
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
         const userId = searchParams.get('userId');
         const status = searchParams.get('status');
 
-        let query = db.query.leaveRequests.findMany({
+        const query = db.query.leaveRequests.findMany({
             with: {
                 user: {
                     columns: {

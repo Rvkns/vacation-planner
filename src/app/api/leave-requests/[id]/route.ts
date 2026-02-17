@@ -55,15 +55,14 @@ export async function PATCH(
         }
 
         // Update request status
-        const [updatedRequest] = await db
+        await db
             .update(leaveRequests)
             .set({
                 status,
                 reviewedBy: session.user.id,
                 updatedAt: new Date(),
             })
-            .where(eq(leaveRequests.id, requestId))
-            .returning();
+            .where(eq(leaveRequests.id, requestId));
 
         // If approved, update user's vacation days
         if (status === 'APPROVED') {

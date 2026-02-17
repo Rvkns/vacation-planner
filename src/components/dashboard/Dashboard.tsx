@@ -8,13 +8,13 @@ import { CalendarDays, Users, Clock, CheckCircle2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
-import { LeaveRequest } from '@/types';
+import { User, LeaveRequest } from '@/types';
 
 export default function Dashboard() {
     const { data: session } = useSession();
     const currentUser = session?.user;
     const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
-    const [allUsers, setAllUsers] = useState<any[]>([]);
+    const [allUsers, setAllUsers] = useState<User[]>([]);
     const [currentMonth, setCurrentMonth] = useState(new Date());
 
     useEffect(() => {
@@ -185,7 +185,7 @@ export default function Dashboard() {
                                     </div>
                                     <div className="space-y-1">
                                         {dayLeaves.slice(0, 2).map(leave => {
-                                            const user = allUsers.find((u: any) => u.id === leave.userId);
+                                            const user = allUsers.find((u) => u.id === leave.userId);
                                             if (!user) return null;
                                             return (
                                                 <div
