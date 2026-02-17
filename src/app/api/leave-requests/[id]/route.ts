@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { db } from '@/db';
 import { leaveRequests, users } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 const updateStatusSchema = z.object({
@@ -12,10 +12,11 @@ const updateStatusSchema = z.object({
 // PATCH - Update leave request status (approve/reject)
 export async function PATCH(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await auth();
+        const { id: requestId } = await params;
 
         if (!session?.user) {
             return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
@@ -40,7 +41,6 @@ export async function PATCH(
         }
 
         const { status } = validatedFields.data;
-        const requestId = params.id;
 
         // Get the request first
         const request = await db.query.leaveRequests.findFirst({
@@ -114,16 +114,16 @@ export async function PATCH(
 // DELETE - Delete a leave request
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await auth();
+        const { id: requestId } = await params;
 
         if (!session?.user) {
             return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
         }
 
-        const requestId = params.id;
 
         // Get the request first to verify ownership
         const request = await db.query.leaveRequests.findFirst({
