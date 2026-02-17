@@ -4,7 +4,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { CalendarDays, FileText, Users, LogOut, Menu, X, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
@@ -21,6 +21,17 @@ export default function Sidebar() {
     const { data: session } = useSession();
     const pathname = usePathname();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+    // Fetch user avatar from API (not stored in JWT to avoid size issues)
+    useEffect(() => {
+        if (session?.user?.id) {
+            fetch('/api/users/me')
+                .then(res => res.json())
+                .then(data => setAvatarUrl(data.avatarUrl))
+                .catch(() => setAvatarUrl(null));
+        }
+    }, [session?.user?.id]);
 
     if (!session?.user) return null;
 
@@ -74,7 +85,7 @@ export default function Sidebar() {
                         <div className="flex items-center gap-4 relative">
                             <div className="relative">
                                 <Image
-                                    src={currentUser.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(currentUser.name)}`}
+                                    src={avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(currentUser.name)}`}
                                     alt={currentUser.name || 'User Avatar'}
                                     width={40}
                                     height={40}
