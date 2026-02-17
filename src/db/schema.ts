@@ -2,7 +2,7 @@ import { pgTable, uuid, varchar, integer, timestamp, pgEnum, text, date } from '
 import { relations } from 'drizzle-orm';
 
 // Enums
-export const userRoleEnum = pgEnum('user_role', ['ADMIN', 'USER']);
+export const userRoleEnum = pgEnum('user_role', ['ADMIN', 'USER', 'MANAGER']);
 export const leaveTypeEnum = pgEnum('leave_type', ['VACATION', 'SICK', 'PERSONAL']);
 export const leaveStatusEnum = pgEnum('leave_status', ['PENDING', 'APPROVED', 'REJECTED']);
 

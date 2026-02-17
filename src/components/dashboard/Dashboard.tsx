@@ -13,6 +13,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Modal from '@/components/ui/Modal';
 import RequestForm from '@/components/requests/RequestForm';
+import { VacationStatsModal, RequestStatsModal, TeamManagementModal } from '@/components/dashboard/StatsModals';
 
 export default function Dashboard() {
     const { data: session } = useSession();
@@ -20,6 +21,9 @@ export default function Dashboard() {
     const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
     const [allUsers, setAllUsers] = useState<User[]>([]);
     const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [activeModal, setActiveModal] = useState<'VACATION' | 'REQUESTS' | 'TEAM' | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -64,7 +68,8 @@ export default function Dashboard() {
     const monthEnd = endOfMonth(currentMonth);
     const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-    // Componenti per le statistiche
+    // Componenti per le statistiche - Definition for mapping if needed, 
+    // but we are using manual cards for click interaction now.
     const stats = [
         {
             title: 'Ferie Disponibili',
@@ -119,12 +124,7 @@ export default function Dashboard() {
         show: { y: 0, opacity: 1 }
     };
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-
     const handleDayClick = (day: Date) => {
-        // Prevent clicking on past days if desired, or allow it. 
-        // For now, we allow clicking any day to request leave.
         setSelectedDate(day);
         setIsModalOpen(true);
     };
@@ -176,33 +176,101 @@ export default function Dashboard() {
                 animate="show"
                 className="grid gap-8 md:grid-cols-2 lg:grid-cols-4"
             >
-                {stats.map((stat) => {
-                    const Icon = stat.icon;
-                    return (
-                        <motion.div key={stat.title} variants={item}>
-                            <Card className="h-full border-none shadow-lg hover:shadow-2xl transition-all duration-300 group bg-white dark:bg-gray-900">
-                                <CardContent className="flex items-start justify-between p-8">
-                                    <div className="space-y-4">
-                                        <div className={`p-3 w-fit rounded-2xl bg-gradient-to-br ${stat.color} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                                            <Icon className="w-6 h-6 text-white" />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wide uppercase">
-                                                {stat.title}
-                                            </p>
-                                            <h3 className="text-4xl font-bold mt-1 text-gray-900 dark:text-white">
-                                                {stat.value}
-                                            </h3>
-                                            <p className={`text-sm mt-1 font-medium ${stat.text}`}>
-                                                {stat.subtitle}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    );
-                })}
+                {/* 1. Vacation Stats */}
+                <motion.div variants={item} onClick={() => setActiveModal('VACATION')} className="cursor-pointer">
+                    <Card className="h-full border-none shadow-lg hover:shadow-2xl transition-all duration-300 group bg-white dark:bg-gray-900 border-l-4 border-l-blue-500">
+                        <CardContent className="flex items-start justify-between p-8">
+                            <div className="space-y-4">
+                                <div className={`p-3 w-fit rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                    <CalendarDays className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                        Ferie Disponibili
+                                    </p>
+                                    <h3 className="text-4xl font-bold mt-1 text-gray-900 dark:text-white">
+                                        {remainingDays}
+                                    </h3>
+                                    <p className="text-sm mt-1 font-medium text-blue-600 dark:text-blue-400">
+                                        su {totalDays} giorni
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                {/* 2. Requests Stats (Approved) */}
+                <motion.div variants={item} onClick={() => setActiveModal('REQUESTS')} className="cursor-pointer">
+                    <Card className="h-full border-none shadow-lg hover:shadow-2xl transition-all duration-300 group bg-white dark:bg-gray-900 border-l-4 border-l-green-500">
+                        <CardContent className="flex items-start justify-between p-8">
+                            <div className="space-y-4">
+                                <div className={`p-3 w-fit rounded-2xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                    <CheckCircle2 className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                        Richieste Approvate
+                                    </p>
+                                    <h3 className="text-4xl font-bold mt-1 text-gray-900 dark:text-white">
+                                        {approvedRequests}
+                                    </h3>
+                                    <p className="text-sm mt-1 font-medium text-green-600 dark:text-green-400">
+                                        Mie richieste
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                {/* 3. Pending Requests */}
+                <motion.div variants={item} onClick={() => setActiveModal('REQUESTS')} className="cursor-pointer">
+                    <Card className="h-full border-none shadow-lg hover:shadow-2xl transition-all duration-300 group bg-white dark:bg-gray-900 border-l-4 border-l-amber-500">
+                        <CardContent className="flex items-start justify-between p-8">
+                            <div className="space-y-4">
+                                <div className={`p-3 w-fit rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                    <Clock className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                        In Attesa
+                                    </p>
+                                    <h3 className="text-4xl font-bold mt-1 text-gray-900 dark:text-white">
+                                        {pendingRequests}
+                                    </h3>
+                                    <p className="text-sm mt-1 font-medium text-amber-600 dark:text-amber-400">
+                                        Richieste pending
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                {/* 4. Team Management */}
+                <motion.div variants={item} onClick={() => setActiveModal('TEAM')} className="cursor-pointer">
+                    <Card className="h-full border-none shadow-lg hover:shadow-2xl transition-all duration-300 group bg-white dark:bg-gray-900 border-l-4 border-l-purple-500">
+                        <CardContent className="flex items-start justify-between p-8">
+                            <div className="space-y-4">
+                                <div className={`p-3 w-fit rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                    <Users className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                        Team
+                                    </p>
+                                    <h3 className="text-4xl font-bold mt-1 text-gray-900 dark:text-white">
+                                        {allUsers.length}
+                                    </h3>
+                                    <p className="text-sm mt-1 font-medium text-purple-600 dark:text-purple-400">
+                                        Membri del team
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
             </motion.div>
 
             {/* Calendar Section */}
@@ -295,6 +363,27 @@ export default function Dashboard() {
                     </CardContent>
                 </Card>
             </motion.div>
+
+            {/* Stats Modals */}
+            <VacationStatsModal
+                isOpen={activeModal === 'VACATION'}
+                onClose={() => setActiveModal(null)}
+                total={totalDays}
+                used={usedDays}
+            />
+
+            <RequestStatsModal
+                isOpen={activeModal === 'REQUESTS'}
+                onClose={() => setActiveModal(null)}
+                requests={myRequests}
+            />
+
+            <TeamManagementModal
+                isOpen={activeModal === 'TEAM'}
+                onClose={() => setActiveModal(null)}
+                users={allUsers}
+                currentUserRole={currentUser?.role}
+            />
 
             {/* Request Modal */}
             <Modal

@@ -1,10 +1,11 @@
+
 import { DefaultSession } from 'next-auth';
 
 declare module 'next-auth' {
     interface Session {
         user: {
             id: string;
-            role: 'ADMIN' | 'USER';
+            role: 'ADMIN' | 'USER' | 'MANAGER';
             vacationDaysTotal: number;
             vacationDaysUsed: number;
             avatarUrl: string | null;
@@ -15,7 +16,7 @@ declare module 'next-auth' {
         id: string;
         email: string;
         name: string;
-        role: 'ADMIN' | 'USER';
+        role: 'ADMIN' | 'USER' | 'MANAGER';
         vacationDaysTotal: number;
         vacationDaysUsed: number;
         avatarUrl: string | null;
@@ -25,7 +26,7 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
     interface JWT {
         id: string;
-        role: 'ADMIN' | 'USER';
+        role: 'ADMIN' | 'USER' | 'MANAGER';
         vacationDaysTotal: number;
         vacationDaysUsed: number;
         avatarUrl: string | null;
