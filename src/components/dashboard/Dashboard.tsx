@@ -313,6 +313,17 @@ export default function Dashboard() {
                         </div>
                     </CardHeader>
                     <CardContent className="p-8">
+                        <div className="flex items-center gap-6 mb-6 text-xs font-medium text-gray-500 dark:text-gray-400">
+                            <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-green-500"></span> Ferie
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-red-500"></span> Malattia
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-amber-500"></span> Permesso
+                            </div>
+                        </div>
                         <div className="grid grid-cols-7 gap-4 mb-6">
                             {['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'].map((day) => (
                                 <div key={day} className="text-center font-semibold text-xs text-gray-400 uppercase tracking-widest">
@@ -419,6 +430,13 @@ function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveR
                     const user = allUsers.find((u) => u.id === leave.userId);
                     if (!user) return null;
 
+                    const typeColors = {
+                        VACATION: 'ring-green-500 dark:ring-green-500',
+                        SICK: 'ring-red-500 dark:ring-red-500',
+                        PERSONAL: 'ring-amber-500 dark:ring-amber-500',
+                    };
+                    const ringColor = typeColors[leave.type as keyof typeof typeColors] || 'ring-gray-200 dark:ring-gray-700';
+
                     return (
                         <motion.div
                             initial={{ opacity: 0, scale: 0.8 }}
@@ -426,9 +444,9 @@ function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveR
                             transition={{ delay: i * 0.05 }}
                             key={leave.id}
                             className="flex items-center gap-2 p-1.5 rounded-full bg-white/80 dark:bg-gray-800/80 border border-gray-100 dark:border-gray-700 shadow-sm"
-                            title={user.name}
+                            title={`${user.name} - ${leave.type}`}
                         >
-                            <div className="w-5 h-5 rounded-full overflow-hidden bg-gray-100 ring-1 ring-gray-200 dark:ring-gray-700 shrink-0">
+                            <div className={`w-5 h-5 rounded-full overflow-hidden bg-gray-100 ring-2 ${ringColor} shrink-0`}>
                                 <Image
                                     src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
                                     alt={user.name}
