@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 const navigation = [
     { name: 'Dashboard', href: '/', icon: CalendarDays },
@@ -46,7 +47,7 @@ export default function Sidebar() {
             {/* Sidebar Container */}
             <aside
                 className={cn(
-                    'fixed lg:sticky top-0 left-0 z-40 w-72 h-screen bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex flex-col transition-all duration-300 ease-in-out',
+                    'fixed lg:sticky top-0 left-0 z-40 w-72 h-screen glass border-r border-white/20 dark:border-white/10 flex flex-col transition-all duration-300 ease-in-out',
                     mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
                 )}
             >
@@ -133,8 +134,12 @@ export default function Sidebar() {
                     })}
                 </nav>
 
-                {/* Logout Footer */}
-                <div className="p-4 border-t border-gray-100 dark:border-gray-800">
+                {/* Footer */}
+                <div className="p-4 border-t border-white/20 dark:border-white/10 space-y-3">
+                    <div className="flex items-center justify-between px-2">
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Tema</span>
+                        <ThemeToggle />
+                    </div>
                     <Button
                         variant="ghost"
                         className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 gap-3"

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import Sidebar from "@/components/layout/Sidebar";
 import { auth } from "@/auth";
 
@@ -25,18 +26,25 @@ export default async function RootLayout({
   return (
     <html lang="it">
       <body className={`${inter.variable} font-sans antialiased`}>
-        <SessionProvider session={session}>
-          {session ? (
-            <div className="flex min-h-screen bg-gray-50 dark:bg-black">
-              <Sidebar />
-              <main className="flex-1 overflow-y-auto">
-                {children}
-              </main>
-            </div>
-          ) : (
-            children
-          )}
-        </SessionProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SessionProvider session={session}>
+            {session ? (
+              <div className="flex min-h-screen bg-gray-50/50 dark:bg-black/50 transition-colors duration-300">
+                <Sidebar />
+                <main className="flex-1 overflow-y-auto">
+                  {children}
+                </main>
+              </div>
+            ) : (
+              children
+            )}
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

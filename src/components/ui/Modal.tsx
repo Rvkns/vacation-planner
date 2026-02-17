@@ -42,8 +42,9 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
+
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden pointer-events-auto border border-gray-100 dark:border-gray-800"
+                            className="glass-modal rounded-2xl w-full max-w-lg overflow-hidden pointer-events-auto"
                         >
                             <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-800">
                                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
