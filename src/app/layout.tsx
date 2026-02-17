@@ -24,13 +24,12 @@ export default async function RootLayout({
   const session = await auth();
 
   return (
-    <html lang="it">
+    <html lang="it" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
         >
           <SessionProvider session={session}>
             {session ? (
