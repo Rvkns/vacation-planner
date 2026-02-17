@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useSession } from 'next-auth/react';
 import { leaveService } from '@/services/leaveService';
 import { userService } from '@/services/userService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -11,7 +11,8 @@ import { it } from 'date-fns/locale';
 import { LeaveRequest } from '@/types';
 
 export default function Dashboard() {
-    const { currentUser } = useAuth();
+    const { data: session } = useSession();
+    const currentUser = session?.user;
     const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
     const [allUsers, setAllUsers] = useState<any[]>([]);
     const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -37,9 +38,10 @@ export default function Dashboard() {
 
     if (!currentUser) return null;
 
+    // Calculate stats from state
     const approvedRequests = leaveRequests.filter(r => r.status === 'APPROVED');
     const pendingRequests = leaveRequests.filter(r => r.status === 'PENDING');
-    const myRequests = leaveService.getRequestsByUserId(currentUser.id);
+    const myRequests = leaveRequests.filter(r => r.userId === currentUser.id);
     const myApprovedCount = myRequests.filter(r => r.status === 'APPROVED').length;
 
     // Calendar logic
@@ -79,7 +81,7 @@ export default function Dashboard() {
         },
         {
             title: 'Team',
-            value: userService.getAllUsers().length.toString(),
+            value: allUsers.length.toString(),
             subtitle: 'Membri del team',
             icon: Users,
             color: 'from-purple-600 to-purple-400',
@@ -183,14 +185,15 @@ export default function Dashboard() {
                                     </div>
                                     <div className="space-y-1">
                                         {dayLeaves.slice(0, 2).map(leave => {
-                                            const user = userService.getUserById(leave.userId);
+                                            const user = allUsers.find((u: any) => u.id === leave.userId);
+                                            if (!user) return null;
                                             return (
                                                 <div
                                                     key={leave.id}
                                                     className="text-xs px-1.5 py-0.5 rounded bg-gradient-to-r from-blue-500 to-blue-400 text-white truncate"
-                                                    title={user?.name}
+                                                    title={user.name}
                                                 >
-                                                    {user?.name.split(' ')[0]}
+                                                    {user.name.split(' ')[0]}
                                                 </div>
                                             );
                                         })}

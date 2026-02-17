@@ -6,7 +6,7 @@ import { userService } from '@/services/userService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { CheckCircle2, XCircle, Calendar, User } from 'lucide-react';
+import { Check, X, Users as UsersIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -16,20 +16,25 @@ export default function TeamRequests() {
     const { data: session } = useSession();
     const currentUser = session?.user;
     const [pendingRequests, setPendingRequests] = useState<LeaveRequest[]>([]);
+    const [allUsers, setAllUsers] = useState<any[]>([]);
 
     useEffect(() => {
-        const fetchRequests = async () => {
+        const fetchData = async () => {
             if (!currentUser || currentUser.role !== 'ADMIN') return;
 
             try {
-                const data = await leaveService.getPendingRequests();
-                setPendingRequests(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+                const [requests, users] = await Promise.all([
+                    leaveService.getPendingRequests(),
+                    userService.getAllUsers(),
+                ]);
+                setPendingRequests(requests.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+                setAllUsers(users);
             } catch (error) {
-                console.error('Error fetching pending requests:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
-        fetchRequests();
+        fetchData();
     }, [currentUser]);
 
     const handleApprove = async (requestId: string) => {
@@ -97,7 +102,7 @@ export default function TeamRequests() {
 
             {/* Requests List */}
             <div className="space-y-4">
-                {requests.length === 0 ? (
+                {pendingRequests.length === 0 ? (
                     <Card>
                         <CardContent className="p-12 text-center">
                             <UsersIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-700 mb-4" />
@@ -110,8 +115,8 @@ export default function TeamRequests() {
                         </CardContent>
                     </Card>
                 ) : (
-                    requests.map((request) => {
-                        const user = userService.getUserById(request.userId);
+                    pendingRequests.map((request) => {
+                        const user = allUsers.find((u: any) => u.id === request.userId);
                         const days = leaveService.calculateDays(request.startDate, request.endDate);
 
                         if (!user) return null;
@@ -123,7 +128,7 @@ export default function TeamRequests() {
                                         <div className="flex items-start gap-4 flex-1">
                                             {/* User Avatar */}
                                             <img
-                                                src={user.avatar}
+                                                src={user.avatarUrl || user.avatar || '/default-avatar.png'}
                                                 alt={user.name}
                                                 className="w-12 h-12 rounded-full ring-2 ring-gray-200 dark:ring-gray-700"
                                             />
@@ -176,7 +181,7 @@ export default function TeamRequests() {
                                                 onClick={() => handleApprove(request.id)}
                                                 className="whitespace-nowrap"
                                             >
-                                                <Check className="w-4 h-4" />
+                                                <Check className="w-4 h-4 mr-1" />
                                                 Approva
                                             </Button>
                                             <Button
@@ -185,7 +190,7 @@ export default function TeamRequests() {
                                                 onClick={() => handleReject(request.id)}
                                                 className="whitespace-nowrap"
                                             >
-                                                <X className="w-4 h-4" />
+                                                <X className="w-4 h-4 mr-1" />
                                                 Rifiuta
                                             </Button>
                                         </div>
