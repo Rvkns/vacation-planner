@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useSession } from 'next-auth/react';
 import { leaveService } from '@/services/leaveService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -8,48 +8,73 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { Badge } from '@/components/ui/Badge';
-import { Plus, Trash2, Calendar } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { LeaveRequest, CreateLeaveRequest } from '@/types';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { LeaveRequest, LeaveType, CreateLeaveRequest } from '@/types';
 
 export default function MyRequests() {
-    const { currentUser } = useAuth();
+    const { data: session } = useSession();
+    const currentUser = session?.user;
     const [requests, setRequests] = useState<LeaveRequest[]>([]);
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState<CreateLeaveRequest>({
         startDate: '',
         endDate: '',
-        type: 'VACATION',
+        type: 'VACATION' as LeaveType,
         reason: '',
     });
 
-    const loadRequests = () => {
-        if (currentUser) {
-            const userRequests = leaveService.getRequestsByUserId(currentUser.id);
-            setRequests(userRequests.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-        }
-    };
-
     useEffect(() => {
-        loadRequests();
+        const fetchRequests = async () => {
+            if (!currentUser) return;
+
+            try {
+                const data = await leaveService.getRequestsByUserId(currentUser.id);
+                // Assuming data needs to be sorted as in the original loadRequests
+                setRequests(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+            } catch (error) {
+                console.error('Error fetching requests:', error);
+            }
+        };
+
+        fetchRequests();
     }, [currentUser]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!currentUser) return;
 
-        leaveService.createRequest(currentUser.id, formData);
-        setFormData({ startDate: '', endDate: '', type: 'VACATION', reason: '' });
-        setShowForm(false);
-        loadRequests();
+        try {
+            const newRequest: CreateLeaveRequest = {
+                startDate: formData.startDate,
+                endDate: formData.endDate,
+                type: formData.type,
+                reason: formData.reason || undefined,
+            };
+
+            const created = await leaveService.createRequest(currentUser.id, newRequest);
+            setRequests([created, ...requests]);
+            setShowForm(false);
+            setFormData({ startDate: '', endDate: '', type: 'VACATION', reason: '' });
+        } catch (error) {
+            console.error('Error creating request:', error);
+            alert('Errore durante la creazione della richiesta');
+        }
     };
 
-    const handleDelete = (requestId: string) => {
-        if (confirm('Sei sicuro di voler cancellare questa richiesta?')) {
-            leaveService.deleteRequest(requestId);
-            loadRequests();
+    const handleDelete = async (requestId: string) => {
+        if (!confirm('Sei sicuro di voler eliminare questa richiesta?')) return;
+
+        try {
+            const success = await leaveService.deleteRequest(requestId);
+            if (success) {
+                setRequests(requests.filter(r => r.id !== requestId));
+            }
+        } catch (error) {
+            console.error('Error deleting request:', error);
+            alert('Errore durante l\'eliminazione della richiesta');
         }
     };
 

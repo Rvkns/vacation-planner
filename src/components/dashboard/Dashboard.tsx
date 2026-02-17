@@ -13,13 +13,26 @@ import { LeaveRequest } from '@/types';
 export default function Dashboard() {
     const { currentUser } = useAuth();
     const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+    const [allUsers, setAllUsers] = useState<any[]>([]);
     const [currentMonth, setCurrentMonth] = useState(new Date());
 
     useEffect(() => {
-        if (currentUser) {
-            const requests = leaveService.getAllRequests();
-            setLeaveRequests(requests);
-        }
+        const fetchData = async () => {
+            if (!currentUser) return;
+
+            try {
+                const [requests, users] = await Promise.all([
+                    leaveService.getAllRequests(),
+                    userService.getAllUsers(),
+                ]);
+                setLeaveRequests(requests);
+                setAllUsers(users);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
     }, [currentUser]);
 
     if (!currentUser) return null;
@@ -161,8 +174,8 @@ export default function Dashboard() {
                                 <div
                                     key={day.toISOString()}
                                     className={`min-h-[80px] p-2 rounded-lg border-2 transition-all ${isToday
-                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                            : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
+                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                        : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
                                         }`}
                                 >
                                     <div className={`text-sm font-semibold mb-1 ${isToday ? 'text-blue-600' : 'text-gray-900 dark:text-white'}`}>

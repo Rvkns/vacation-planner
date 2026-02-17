@@ -1,41 +1,58 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useSession } from 'next-auth/react';
 import { leaveService } from '@/services/leaveService';
 import { userService } from '@/services/userService';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { Check, X, Users as UsersIcon } from 'lucide-react';
+import { CheckCircle2, XCircle, Calendar, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { LeaveRequest } from '@/types';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { LeaveRequest } from '@/types';
 
 export default function TeamRequests() {
-    const { currentUser } = useAuth();
-    const [requests, setRequests] = useState<LeaveRequest[]>([]);
-
-    const loadRequests = () => {
-        const allRequests = leaveService.getPendingRequests();
-        setRequests(allRequests.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-    };
+    const { data: session } = useSession();
+    const currentUser = session?.user;
+    const [pendingRequests, setPendingRequests] = useState<LeaveRequest[]>([]);
 
     useEffect(() => {
-        loadRequests();
-    }, []);
+        const fetchRequests = async () => {
+            if (!currentUser || currentUser.role !== 'ADMIN') return;
 
-    const handleApprove = (requestId: string) => {
+            try {
+                const data = await leaveService.getPendingRequests();
+                setPendingRequests(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+            } catch (error) {
+                console.error('Error fetching pending requests:', error);
+            }
+        };
+
+        fetchRequests();
+    }, [currentUser]);
+
+    const handleApprove = async (requestId: string) => {
         if (!currentUser) return;
-        leaveService.updateRequestStatus(requestId, 'APPROVED', currentUser.id);
-        loadRequests();
+        try {
+            await leaveService.updateRequestStatus(requestId, 'APPROVED');
+            setPendingRequests(pendingRequests.filter(r => r.id !== requestId));
+        } catch (error) {
+            console.error('Error approving request:', error);
+            alert('Errore durante l\'approvazione della richiesta');
+        }
     };
 
-    const handleReject = (requestId: string) => {
+    const handleReject = async (requestId: string) => {
         if (!currentUser) return;
         if (confirm('Sei sicuro di voler rifiutare questa richiesta?')) {
-            leaveService.updateRequestStatus(requestId, 'REJECTED', currentUser.id);
-            loadRequests();
+            try {
+                await leaveService.updateRequestStatus(requestId, 'REJECTED');
+                setPendingRequests(pendingRequests.filter(r => r.id !== requestId));
+            } catch (error) {
+                console.error('Error rejecting request:', error);
+                alert('Errore durante il rifiuto della richiesta');
+            }
         }
     };
 
