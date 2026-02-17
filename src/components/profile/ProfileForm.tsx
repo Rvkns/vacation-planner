@@ -59,17 +59,33 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         }
     };
 
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                alert('L\'immagine è troppo grande (max 2MB)');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData({ ...formData, avatarUrl: reader.result as string });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     return (
         <div className="grid gap-6 md:grid-cols-2">
             {/* Avatar Section */}
             <Card className="h-fit">
                 <CardHeader>
                     <CardTitle>Foto Profilo</CardTitle>
-                    <CardDescription>Scegli il tuo avatar o inserisci un URL personalizzato</CardDescription>
+                    <CardDescription>Carica una foto o usa un avatar generato</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                     <div className="flex justify-center">
-                        <div className="relative w-32 h-32 rounded-full overflow-hidden ring-4 ring-gray-100 dark:ring-gray-800">
+                        <div className="relative w-32 h-32 rounded-full overflow-hidden ring-4 ring-gray-100 dark:ring-gray-800 shadow-md">
                             <Image
                                 src={formData.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(formData.name)}`}
                                 alt="Avatar Preview"
@@ -79,14 +95,35 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">URL Avatar (opzionale)</label>
-                        <Input
-                            value={formData.avatarUrl}
-                            onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
-                            placeholder="https://..."
-                        />
-                        <p className="text-xs text-gray-400">Lascia vuoto per usare l'avatar generato automaticamente.</p>
+                    <div className="flex flex-col items-center gap-4">
+                        <Button variant="outline" className="relative w-full" type="button">
+                            Carica Foto
+                            <input
+                                type="file"
+                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                            />
+                        </Button>
+
+                        <div className="relative w-full">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t border-gray-200 dark:border-gray-700" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-white dark:bg-gray-900 px-2 text-gray-400">Opzioni avanzate</span>
+                            </div>
+                        </div>
+
+                        <div className="w-full space-y-2">
+                            <label className="text-xs font-medium text-gray-500">URL Immagine</label>
+                            <Input
+                                value={formData.avatarUrl}
+                                onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
+                                placeholder="https://..."
+                                className="text-sm"
+                            />
+                        </div>
                     </div>
                 </CardContent>
             </Card>

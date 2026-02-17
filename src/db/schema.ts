@@ -15,7 +15,7 @@ export const users = pgTable('users', {
     role: userRoleEnum('role').default('USER').notNull(),
     vacationDaysTotal: integer('vacation_days_total').default(22).notNull(),
     vacationDaysUsed: integer('vacation_days_used').default(0).notNull(),
-    avatarUrl: varchar('avatar_url', { length: 500 }),
+    avatarUrl: text('avatar_url'),
     jobTitle: varchar('job_title', { length: 255 }),
     department: varchar('department', { length: 255 }),
     bio: text('bio'),
