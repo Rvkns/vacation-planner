@@ -22,14 +22,15 @@ export type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export interface LeaveRequest {
     id: string;
     userId: string;
-    startDate: string;
-    endDate: string;
+    startDate: string; // ISO date string
+    endDate: string; // ISO date string
     type: LeaveType;
     status: LeaveStatus;
-    reason?: string;
-    createdAt: string;
-    reviewedAt?: string;
-    reviewedBy?: string;
+    reason?: string | null;
+    handoverNotes?: string | null;
+    reviewedBy?: string | null;
+    createdAt: Date;
+    user?: User; // Joined user data
 }
 
 export interface CreateLeaveRequest {

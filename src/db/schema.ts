@@ -33,6 +33,7 @@ export const leaveRequests = pgTable('leave_requests', {
     type: leaveTypeEnum('type').notNull(),
     status: leaveStatusEnum('status').default('PENDING').notNull(),
     reason: text('reason'),
+    handoverNotes: text('handover_notes'),
     reviewedBy: uuid('reviewed_by').references(() => users.id),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),

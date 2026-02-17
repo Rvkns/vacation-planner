@@ -4,11 +4,12 @@
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { CalendarDays, CheckCircle2, Clock, Users } from 'lucide-react';
+import { CalendarDays, CheckCircle2, Clock, Users, StickyNote } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { LeaveRequest, User } from '@/types';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { getHolidays, isHoliday } from '@/lib/holidays';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Modal from '@/components/ui/Modal';
@@ -414,17 +415,29 @@ export default function Dashboard() {
 
 function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveRequest[], allUsers: User[], onClick: () => void }) {
     const isToday = isSameDay(day, new Date());
+    const holidays = getHolidays(day.getFullYear());
+    const holiday = isHoliday(day, holidays);
 
     return (
         <div
             onClick={onClick}
             className={`min-h-[120px] p-4 border rounded-3xl transition-all duration-200 cursor-pointer group relative overflow-hidden ${isToday
                 ? 'bg-blue-50/80 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 ring-2 ring-blue-400 ring-offset-2 dark:ring-offset-gray-900'
-                : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg hover:-translate-y-1'
+                : holiday
+                    ? 'bg-red-50/50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30'
+                    : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg hover:-translate-y-1'
                 }`}>
-            <div className={`text-right text-sm font-semibold mb-3 ${isToday ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
-                {format(day, 'd')}
+            <div className="flex justify-between items-start mb-3">
+                <div className={`text-sm font-semibold ${isToday ? 'text-blue-600' : holiday ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
+                    {format(day, 'd')}
+                </div>
+                {holiday && (
+                    <span className="text-[10px] font-medium text-red-500 bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded-full truncate max-w-[80px]" title={holiday.localName}>
+                        {holiday.localName}
+                    </span>
+                )}
             </div>
+
             <div className="space-y-2">
                 {leaves.slice(0, 3).map((leave, i) => {
                     const user = allUsers.find((u) => u.id === leave.userId);
@@ -436,6 +449,7 @@ function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveR
                         PERSONAL: 'ring-amber-500 dark:ring-amber-500',
                     };
                     const ringColor = typeColors[leave.type as keyof typeof typeColors] || 'ring-gray-200 dark:ring-gray-700';
+                    const hasNotes = leave.handoverNotes && leave.handoverNotes.trim().length > 0;
 
                     return (
                         <motion.div
@@ -443,8 +457,8 @@ function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveR
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: i * 0.05 }}
                             key={leave.id}
-                            className="flex items-center gap-2 p-1.5 rounded-full bg-white/80 dark:bg-gray-800/80 border border-gray-100 dark:border-gray-700 shadow-sm"
-                            title={`${user.name} - ${leave.type}`}
+                            className="flex items-center gap-2 p-1.5 rounded-full bg-white/80 dark:bg-gray-800/80 border border-gray-100 dark:border-gray-700 shadow-sm relative group/item"
+                            title={`${user.name} - ${leave.type}${hasNotes ? `\nNote: ${leave.handoverNotes}` : ''}`}
                         >
                             <div className={`w-5 h-5 rounded-full overflow-hidden bg-gray-100 ring-2 ${ringColor} shrink-0`}>
                                 <Image
@@ -457,6 +471,11 @@ function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveR
                             <span className="truncate text-xs font-medium text-gray-700 dark:text-gray-300 max-w-[80px]">
                                 {user.name.split(' ')[0]}
                             </span>
+                            {hasNotes && (
+                                <div className="absolute -top-1 -right-1 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 p-0.5 rounded-full ring-1 ring-white dark:ring-gray-900" title="Note presenti">
+                                    <StickyNote className="w-2.5 h-2.5" />
+                                </div>
+                            )}
                         </motion.div>
                     );
                 })}

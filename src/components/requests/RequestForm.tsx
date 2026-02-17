@@ -8,6 +8,7 @@ import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { LeaveType, CreateLeaveRequest } from '@/types';
 import { Loader2 } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface RequestFormProps {
     initialDate?: string; // YYYY-MM-DD
@@ -17,11 +18,12 @@ interface RequestFormProps {
 
 export default function RequestForm({ initialDate, onSuccess, onCancel }: RequestFormProps) {
     const [isLoading, setIsLoading] = useState(false);
-    const [formData, setFormData] = useState<CreateLeaveRequest>({
-        startDate: initialDate || '',
-        endDate: initialDate || '',
+    const [formData, setFormData] = useState<CreateLeaveRequest & { handoverNotes?: string }>({
+        startDate: format(initialDate || new Date(), 'yyyy-MM-dd'),
+        endDate: format(initialDate || new Date(), 'yyyy-MM-dd'),
         type: 'VACATION',
         reason: '',
+        handoverNotes: '',
     });
 
     useEffect(() => {
@@ -87,16 +89,32 @@ export default function RequestForm({ initialDate, onSuccess, onCancel }: Reques
                 </Select>
             </div>
 
-            <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Motivazione (opzionale)
-                </label>
-                <Textarea
-                    value={formData.reason}
-                    onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                    placeholder="Inserisci note aggiuntive..."
-                    rows={3}
-                />
+            <div className="space-y-4"> {/* Changed to space-y-4 for spacing between the two textareas */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Motivazione (opzionale)
+                    </label>
+                    <textarea
+                        value={formData.reason}
+                        onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                        className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                        rows={2}
+                        placeholder="Es. Viaggio di nozze, Visita medica..."
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Note per i colleghi (Handover) 📝
+                    </label>
+                    <textarea
+                        value={formData.handoverNotes || ''}
+                        onChange={(e) => setFormData({ ...formData, handoverNotes: e.target.value })}
+                        className="w-full rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/10 px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all placeholder:text-amber-400 dark:placeholder:text-amber-700"
+                        rows={3}
+                        placeholder="Es. Le chiavi sono nel cassetto, ho delegato il ticket X a Marco..."
+                    />
+                </div>
             </div>
 
             <div className="flex justify-end gap-3 pt-4">

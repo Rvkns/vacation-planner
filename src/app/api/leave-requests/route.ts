@@ -10,6 +10,7 @@ const createLeaveRequestSchema = z.object({
     endDate: z.string(),
     type: z.enum(['VACATION', 'SICK', 'PERSONAL']),
     reason: z.string().optional(),
+    handoverNotes: z.string().optional(),
 });
 
 // GET - Fetch leave requests
@@ -97,6 +98,7 @@ export async function POST(req: NextRequest) {
             endDate,
             type,
             reason,
+            handoverNotes: validatedFields.data.handoverNotes,
             status: 'PENDING',
         }).returning();
 
