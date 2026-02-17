@@ -7,6 +7,10 @@ export interface User {
     email: string;
     role: UserRole;
     avatarUrl: string | null;
+    jobTitle?: string | null;
+    department?: string | null;
+    bio?: string | null;
+    phoneNumber?: string | null;
     vacationDaysTotal: number;
     vacationDaysUsed: number;
 }

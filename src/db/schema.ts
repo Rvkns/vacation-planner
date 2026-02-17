@@ -16,6 +16,10 @@ export const users = pgTable('users', {
     vacationDaysTotal: integer('vacation_days_total').default(22).notNull(),
     vacationDaysUsed: integer('vacation_days_used').default(0).notNull(),
     avatarUrl: varchar('avatar_url', { length: 500 }),
+    jobTitle: varchar('job_title', { length: 255 }),
+    department: varchar('department', { length: 255 }),
+    bio: text('bio'),
+    phoneNumber: varchar('phone_number', { length: 50 }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
