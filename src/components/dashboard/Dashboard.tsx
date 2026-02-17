@@ -11,6 +11,8 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from '
 import { it } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import Modal from '@/components/ui/Modal';
+import RequestForm from '@/components/requests/RequestForm';
 
 export default function Dashboard() {
     const { data: session } = useSession();
@@ -117,52 +119,83 @@ export default function Dashboard() {
         show: { y: 0, opacity: 1 }
     };
 
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+
+    const handleDayClick = (day: Date) => {
+        // Prevent clicking on past days if desired, or allow it. 
+        // For now, we allow clicking any day to request leave.
+        setSelectedDate(day);
+        setIsModalOpen(true);
+    };
+
+    const handleRequestSuccess = async (data: any) => {
+        try {
+            const res = await fetch('/api/leave-requests', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (res.ok) {
+                const newRequest = await res.json();
+                setLeaveRequests([newRequest, ...leaveRequests]);
+                setIsModalOpen(false);
+            } else {
+                alert('Errore durante la creazione della richiesta');
+            }
+        } catch (error) {
+            console.error('Error creating request:', error);
+        }
+    };
+
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8">
+        <div className="p-6 lg:p-12 max-w-7xl mx-auto space-y-12">
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-center justify-between"
             >
                 <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+                    <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-2">
                         Dashboard
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2">
-                        Benvenuto, {currentUser?.name} 👋
+                    <p className="text-lg text-gray-500 dark:text-gray-400">
+                        Bentornato, <span className="font-semibold text-gray-800 dark:text-gray-200">{currentUser?.name}</span> 👋
                     </p>
                 </div>
-                <div className="text-sm text-gray-500 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="hidden md:block text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 px-6 py-3 rounded-full shadow-sm border border-gray-100 dark:border-gray-700">
                     {format(new Date(), 'EEEE d MMMM yyyy', { locale: it })}
                 </div>
             </motion.div>
 
+            {/* Stats Grid */}
             <motion.div
                 variants={container}
                 initial="hidden"
                 animate="show"
-                className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
+                className="grid gap-8 md:grid-cols-2 lg:grid-cols-4"
             >
                 {stats.map((stat) => {
                     const Icon = stat.icon;
                     return (
                         <motion.div key={stat.title} variants={item}>
-                            <Card className="overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 group">
-                                <CardContent className="p-6">
-                                    <div className="flex items-start justify-between">
+                            <Card className="h-full border-none shadow-lg hover:shadow-2xl transition-all duration-300 group bg-white dark:bg-gray-900">
+                                <CardContent className="flex items-start justify-between p-8">
+                                    <div className="space-y-4">
+                                        <div className={`p-3 w-fit rounded-2xl bg-gradient-to-br ${stat.color} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                            <Icon className="w-6 h-6 text-white" />
+                                        </div>
                                         <div>
-                                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wide uppercase">
                                                 {stat.title}
                                             </p>
-                                            <h3 className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">
+                                            <h3 className="text-4xl font-bold mt-1 text-gray-900 dark:text-white">
                                                 {stat.value}
                                             </h3>
-                                            <p className={`text-xs mt-1 font-medium ${stat.text}`}>
+                                            <p className={`text-sm mt-1 font-medium ${stat.text}`}>
                                                 {stat.subtitle}
                                             </p>
-                                        </div>
-                                        <div className={`p-3 rounded-2xl bg-gradient-to-br ${stat.color} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                                            <Icon className="w-6 h-6 text-white" />
                                         </div>
                                     </div>
                                 </CardContent>
@@ -172,43 +205,49 @@ export default function Dashboard() {
                 })}
             </motion.div>
 
+            {/* Calendar Section */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
             >
-                <Card className="border-none shadow-xl overflow-hidden">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
-                        <CardTitle className="text-xl font-bold flex items-center gap-2">
-                            <CalendarDays className="w-5 h-5 text-blue-500" />
-                            Calendario Ferie Team
-                        </CardTitle>
-                        <div className="flex gap-2">
+                <Card className="border-none shadow-2xl overflow-hidden bg-white dark:bg-gray-900">
+                    <CardHeader className="flex flex-row items-center justify-between p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
+                        <div>
+                            <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                                <CalendarDays className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                                Calendario Team
+                            </CardTitle>
+                            <p className="text-sm text-gray-500 mt-1">
+                                Clicca su un giorno per inserire una nuova richiesta
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-4 bg-white dark:bg-gray-800 p-1.5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                             <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() - 1)))}
-                                className="hover:bg-white hover:text-blue-600 transition-colors"
+                                className="hover:bg-gray-100 dark:hover:bg-gray-700 w-8 h-8 p-0 rounded-lg"
                             >
                                 ←
                             </Button>
-                            <span className="font-semibold w-32 text-center py-1">
+                            <span className="font-semibold w-40 text-center text-gray-700 dark:text-gray-200">
                                 {format(currentMonth, 'MMMM yyyy', { locale: it })}
                             </span>
                             <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() + 1)))}
-                                className="hover:bg-white hover:text-blue-600 transition-colors"
+                                className="hover:bg-gray-100 dark:hover:bg-gray-700 w-8 h-8 p-0 rounded-lg"
                             >
                                 →
                             </Button>
                         </div>
                     </CardHeader>
-                    <CardContent className="p-6">
-                        <div className="grid grid-cols-7 gap-4 mb-4">
+                    <CardContent className="p-8">
+                        <div className="grid grid-cols-7 gap-4 mb-6">
                             {['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'].map((day) => (
-                                <div key={day} className="text-center font-medium text-sm text-gray-400 uppercase tracking-wider">
+                                <div key={day} className="text-center font-semibold text-xs text-gray-400 uppercase tracking-widest">
                                     {day}
                                 </div>
                             ))}
@@ -217,8 +256,8 @@ export default function Dashboard() {
                             {daysInMonth.map((day, dayIdx) => {
                                 const dayLeaves = leaveRequests.filter(req =>
                                     req.status === 'APPROVED' &&
-                                    isSameDay(new Date(req.startDate), day) ||
-                                    (new Date(req.startDate) <= day && new Date(req.endDate) >= day && req.status === 'APPROVED')
+                                    (isSameDay(new Date(req.startDate), day) ||
+                                        (new Date(req.startDate) <= day && new Date(req.endDate) >= day))
                                 );
 
                                 // Add empty placeholders for start of month
@@ -229,36 +268,65 @@ export default function Dashboard() {
                                     return (
                                         <>
                                             {placeholders.map((_, i) => (
-                                                <div key={`empty-${i}`} className="h-24 bg-gray-50/30 dark:bg-gray-800/30 rounded-xl" />
+                                                <div key={`empty-${i}`} className="min-h-[120px] bg-gray-50/30 dark:bg-gray-800/30 rounded-2xl" />
                                             ))}
-                                            <DayCell key={day.toString()} day={day} leaves={dayLeaves} allUsers={allUsers} />
+                                            <DayCell
+                                                key={day.toString()}
+                                                day={day}
+                                                leaves={dayLeaves}
+                                                allUsers={allUsers}
+                                                onClick={() => handleDayClick(day)}
+                                            />
                                         </>
                                     );
                                 }
 
-                                return <DayCell key={day.toString()} day={day} leaves={dayLeaves} allUsers={allUsers} />;
+                                return (
+                                    <DayCell
+                                        key={day.toString()}
+                                        day={day}
+                                        leaves={dayLeaves}
+                                        allUsers={allUsers}
+                                        onClick={() => handleDayClick(day)}
+                                    />
+                                );
                             })}
                         </div>
                     </CardContent>
                 </Card>
             </motion.div>
+
+            {/* Request Modal */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title="Nuova Richiesta"
+            >
+                <RequestForm
+                    initialDate={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined}
+                    onSuccess={handleRequestSuccess}
+                    onCancel={() => setIsModalOpen(false)}
+                />
+            </Modal>
         </div>
     );
 }
 
-function DayCell({ day, leaves, allUsers }: { day: Date, leaves: LeaveRequest[], allUsers: User[] }) {
+function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveRequest[], allUsers: User[], onClick: () => void }) {
     const isToday = isSameDay(day, new Date());
 
     return (
-        <div className={`min-h-[100px] p-3 border rounded-2xl transition-all duration-200 hover:shadow-md ${isToday
-                ? 'bg-blue-50/50 border-blue-200 dark:bg-blue-900/10 dark:border-blue-800 ring-1 ring-blue-400'
-                : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 hover:border-blue-200 dark:hover:border-blue-800'
-            }`}>
-            <div className={`text-right text-sm font-medium mb-2 ${isToday ? 'text-blue-600' : 'text-gray-400'}`}>
+        <div
+            onClick={onClick}
+            className={`min-h-[120px] p-4 border rounded-3xl transition-all duration-200 cursor-pointer group relative overflow-hidden ${isToday
+                ? 'bg-blue-50/80 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 ring-2 ring-blue-400 ring-offset-2 dark:ring-offset-gray-900'
+                : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg hover:-translate-y-1'
+                }`}>
+            <div className={`text-right text-sm font-semibold mb-3 ${isToday ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
                 {format(day, 'd')}
             </div>
-            <div className="space-y-1.5">
-                {leaves.slice(0, 2).map((leave, i) => {
+            <div className="space-y-2">
+                {leaves.slice(0, 3).map((leave, i) => {
                     const user = allUsers.find((u) => u.id === leave.userId);
                     if (!user) return null;
 
@@ -268,27 +336,32 @@ function DayCell({ day, leaves, allUsers }: { day: Date, leaves: LeaveRequest[],
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: i * 0.05 }}
                             key={leave.id}
-                            className="flex items-center gap-1.5 text-xs p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50"
+                            className="flex items-center gap-2 p-1.5 rounded-full bg-white/80 dark:bg-gray-800/80 border border-gray-100 dark:border-gray-700 shadow-sm"
                             title={user.name}
                         >
-                            <div className="w-4 h-4 rounded-full overflow-hidden bg-white shrink-0">
+                            <div className="w-5 h-5 rounded-full overflow-hidden bg-gray-100 ring-1 ring-gray-200 dark:ring-gray-700 shrink-0">
                                 <Image
                                     src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
                                     alt={user.name}
-                                    width={16}
-                                    height={16}
+                                    width={20}
+                                    height={20}
                                 />
                             </div>
-                            <span className="truncate font-medium">{user.name.split(' ')[0]}</span>
+                            <span className="truncate text-xs font-medium text-gray-700 dark:text-gray-300 max-w-[80px]">
+                                {user.name.split(' ')[0]}
+                            </span>
                         </motion.div>
                     );
                 })}
-                {leaves.length > 2 && (
-                    <div className="text-[10px] text-center text-gray-400 font-medium">
-                        +{leaves.length - 2} altri
+                {leaves.length > 3 && (
+                    <div className="text-[10px] text-center font-medium text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-full py-1">
+                        +{leaves.length - 3} altri
                     </div>
                 )}
             </div>
+
+            {/* Hover visual cue */}
+            <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
         </div>
     );
 }
