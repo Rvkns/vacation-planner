@@ -65,22 +65,22 @@ export default function Sidebar() {
                 {/* Logo Section */}
                 <div className="p-6">
                     <div className="flex items-center gap-3 px-2">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                        <div className="w-10 h-10 rounded-xl bg-[#EB0A1E] flex items-center justify-center shadow-lg shadow-red-500/20">
                             <CalendarDays className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+                            <h1 className="text-lg font-bold bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400 bg-clip-text text-transparent">
                                 VacaPlanner
                             </h1>
-                            <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400">Team Edition</p>
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">Team Edition</p>
                         </div>
                     </div>
                 </div>
 
                 {/* User Info Card */}
                 <div className="px-4 mb-6">
-                    <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50 relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-neutral-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
 
                         <div className="flex items-center gap-4 relative">
                             <div className="relative">
@@ -89,24 +89,24 @@ export default function Sidebar() {
                                     alt={currentUser.name || 'User Avatar'}
                                     width={40}
                                     height={40}
-                                    className="rounded-full ring-2 ring-white dark:ring-gray-800 shadow-sm"
+                                    className="rounded-full ring-2 ring-white dark:ring-neutral-800 shadow-sm"
                                 />
-                                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-900" />
+                                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white dark:ring-neutral-900" />
                             </div>
 
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold truncate text-gray-900 dark:text-white">
+                                <p className="text-sm font-semibold truncate text-neutral-900 dark:text-white">
                                     {currentUser.name}
                                 </p>
-                                <p className="text-xs text-gray-500 truncate">
+                                <p className="text-xs text-neutral-500 truncate">
                                     {currentUser.role === 'ADMIN' ? 'Team Manager' : 'Team Member'}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/50 flex justify-between items-center text-xs">
-                            <span className="text-gray-500">Ferie residue</span>
-                            <span className="font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-md">
+                        <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-700/50 flex justify-between items-center text-xs">
+                            <span className="text-neutral-500">Ferie residue</span>
+                            <span className="font-bold text-[#EB0A1E] bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-md">
                                 {currentUser.vacationDaysTotal - currentUser.vacationDaysUsed}gg
                             </span>
                         </div>
@@ -131,11 +131,11 @@ export default function Sidebar() {
                                 className={cn(
                                     'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden',
                                     isActive
-                                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
-                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white'
+                                        ? 'bg-[#EB0A1E] text-white shadow-md shadow-red-500/25'
+                                        : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 hover:text-neutral-900 dark:hover:text-white'
                                 )}
                             >
-                                <Icon className={cn("w-5 h-5 transition-transform group-hover:scale-110", isActive ? "text-white" : "text-gray-400 group-hover:text-blue-500")} />
+                                <Icon className={cn("w-5 h-5 transition-transform group-hover:scale-110", isActive ? "text-white" : "text-neutral-400 group-hover:text-[#EB0A1E]")} />
                                 <span className="font-medium">{item.name}</span>
                                 {isActive && (
                                     <div className="absolute right-2 w-1.5 h-1.5 rounded-full bg-white/50" />

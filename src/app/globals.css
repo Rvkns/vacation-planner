@@ -7,19 +7,20 @@
 }
 
 :root {
-  --background: #f8fafc;
-  /* Slate-50 */
-  --foreground: #0f172a;
-  /* Slate-900 */
+  --background: #ffffff;
+  /* Toyota White */
+  --foreground: #1a1a1a;
+  /* Toyota Black (Carbon) */
+  --color-toyota-red: #EB0A1E;
 }
 
 .dark {
-  --background: #020617;
-  /* Slate-950 (Midnight Blue) */
-  --foreground: #f8fafc;
+  --background: #1a1a1a;
+  /* Toyota Dark Gray/Black */
+  --foreground: #ffffff;
 }
 
-/* Glass Background Patterns */
+/* Glass Background Patterns - Modified for Toyota Aesthetic (Red Accents) */
 body {
   background-color: var(--background);
   color: var(--foreground);
@@ -38,28 +39,36 @@ body::before {
   height: 100vh;
   z-index: -1;
   background:
-    radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08), transparent 25%),
-    radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.08), transparent 25%);
+    radial-gradient(circle at 15% 50%, rgba(235, 10, 30, 0.03), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(235, 10, 30, 0.03), transparent 25%);
   pointer-events: none;
 }
 
 .dark body::before {
   background:
-    radial-gradient(circle at 15% 50%, rgba(30, 64, 175, 0.15), transparent 45%),
-    radial-gradient(circle at 85% 30%, rgba(109, 40, 217, 0.15), transparent 45%);
+    radial-gradient(circle at 15% 50%, rgba(235, 10, 30, 0.05), transparent 45%),
+    radial-gradient(circle at 85% 30%, rgba(235, 10, 30, 0.05), transparent 45%);
 }
 
-/* Custom Utilities for Glassmorphism */
+/* Custom Utilities for Glassmorphism & Branding */
 @layer utilities {
   .glass {
-    @apply bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-xl;
+    @apply bg-white/70 dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 shadow-xl;
   }
 
   .glass-card {
-    @apply bg-white/40 dark:bg-slate-900/30 backdrop-blur-md border border-white/40 dark:border-white/5 shadow-sm hover:shadow-xl transition-all duration-300;
+    @apply bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all duration-300;
   }
 
   .glass-modal {
-    @apply bg-white/80 dark:bg-slate-950/90 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-2xl;
+    @apply bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xl;
+  }
+
+  .text-brand {
+    @apply text-[#EB0A1E];
+  }
+
+  .bg-brand {
+    @apply bg-[#EB0A1E];
   }
 }

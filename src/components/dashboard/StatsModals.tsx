@@ -21,8 +21,8 @@ interface VacationStatsModalProps {
 export function VacationStatsModal({ isOpen, onClose, total, used }: VacationStatsModalProps) {
     const remaining = total - used;
     const data = [
-        { name: 'Usate', value: used, color: '#3b82f6' }, // blue-500
-        { name: 'Rimanenti', value: remaining, color: '#e5e7eb' }, // gray-200
+        { name: 'Usate', value: used, color: '#a3a3a3' }, // neutral-400
+        { name: 'Rimanenti', value: remaining, color: '#EB0A1E' }, // Toyota Red
     ];
 
     return (
@@ -49,11 +49,11 @@ export function VacationStatsModal({ isOpen, onClose, total, used }: VacationSta
                 </ResponsiveContainer>
             </div>
             <div className="text-center mt-4 space-y-2">
-                <p className="text-lg font-medium">
-                    Hai usato <span className="font-bold text-blue-600">{used}</span> giorni su <span className="font-bold">{total}</span>.
+                <p className="text-lg font-medium text-neutral-900 dark:text-neutral-100">
+                    Hai usato <span className="font-bold text-neutral-500">{used}</span> giorni su <span className="font-bold">{total}</span>.
                 </p>
-                <p className="text-sm text-gray-500">
-                    Ti rimangono {remaining} giorni da pianificare! 🌴
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    Ti rimangono <span className="text-[#EB0A1E] font-bold">{remaining}</span> giorni da pianificare! 🌴
                 </p>
             </div>
         </Modal>
@@ -91,15 +91,15 @@ export function RequestStatsModal({ isOpen, onClose, requests }: RequestStatsMod
             <div className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={data}>
-                        <XAxis dataKey="name" />
-                        <YAxis allowDecimals={false} />
+                        <XAxis dataKey="name" stroke="#a3a3a3" />
+                        <YAxis allowDecimals={false} stroke="#a3a3a3" />
                         <Tooltip />
                         <Bar dataKey="value" radius={[4, 4, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>
             </div>
             <div className="text-center mt-4">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                     Panoramica dello stato di tutte le tue richieste inviate.
                 </p>
             </div>
@@ -150,9 +150,9 @@ export function TeamManagementModal({ isOpen, onClose, users, currentUserRole }:
         <Modal isOpen={isOpen} onClose={onClose} title="Gestione Team">
             <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                 {users.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
+                    <div key={user.id} className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-100 dark:border-neutral-700">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full overflow-hidden bg-white shrink-0 ring-2 ring-gray-100 dark:ring-gray-700">
+                            <div className="w-10 h-10 rounded-full overflow-hidden bg-white shrink-0 ring-2 ring-neutral-100 dark:ring-neutral-700">
                                 <Image
                                     src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
                                     alt={user.name}
@@ -161,14 +161,14 @@ export function TeamManagementModal({ isOpen, onClose, users, currentUserRole }:
                                 />
                             </div>
                             <div>
-                                <p className="font-semibold text-gray-900 dark:text-white leading-tight">
+                                <p className="font-semibold text-neutral-900 dark:text-white leading-tight">
                                     {user.name}
                                 </p>
                                 <div className="flex items-center gap-1.5 mt-0.5">
-                                    {user.role === 'ADMIN' && <ShieldAlert className="w-3 h-3 text-red-500" />}
-                                    {user.role === 'MANAGER' && <ShieldCheck className="w-3 h-3 text-purple-500" />}
-                                    {user.role === 'USER' && <Shield className="w-3 h-3 text-gray-400" />}
-                                    <span className="text-xs text-gray-500 font-medium lowercase first-letter:uppercase">
+                                    {user.role === 'ADMIN' && <ShieldAlert className="w-3 h-3 text-[#EB0A1E]" />}
+                                    {user.role === 'MANAGER' && <ShieldCheck className="w-3 h-3 text-neutral-600 dark:text-neutral-400" />}
+                                    {user.role === 'USER' && <Shield className="w-3 h-3 text-neutral-400" />}
+                                    <span className="text-xs text-neutral-500 font-medium lowercase first-letter:uppercase">
                                         {user.role}
                                     </span>
                                 </div>
@@ -181,7 +181,7 @@ export function TeamManagementModal({ isOpen, onClose, users, currentUserRole }:
                                 <Button
                                     size="sm"
                                     variant="outline"
-                                    className="text-xs h-8 text-blue-600 hover:text-blue-700 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/20"
+                                    className="text-xs h-8 text-neutral-900 hover:text-white border-neutral-200 hover:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-800"
                                     onClick={() => handleRoleUpdate(user.id, 'MANAGER')}
                                     disabled={updatingUserId === user.id}
                                 >
@@ -192,7 +192,7 @@ export function TeamManagementModal({ isOpen, onClose, users, currentUserRole }:
                                 <Button
                                     size="sm"
                                     variant="outline"
-                                    className="text-xs h-8 text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50"
+                                    className="text-xs h-8 text-[#EB0A1E] hover:text-white border-red-200 hover:bg-[#EB0A1E] dark:hover:bg-[#EB0A1E]/80"
                                     onClick={() => handleRoleUpdate(user.id, 'USER')}
                                     disabled={updatingUserId === user.id}
                                 >

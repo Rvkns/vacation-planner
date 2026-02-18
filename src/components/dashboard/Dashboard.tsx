@@ -77,9 +77,9 @@ export default function Dashboard() {
             value: remainingDays,
             subtitle: `su ${totalDays} giorni`,
             icon: CalendarDays,
-            color: 'from-blue-500 to-blue-600',
-            bg: 'bg-blue-50 dark:bg-blue-900/20',
-            text: 'text-blue-600 dark:text-blue-400'
+            color: 'from-[#EB0A1E] to-[#CC091A]', // Toyota Red
+            bg: 'bg-neutral-50 dark:bg-neutral-900',
+            text: 'text-[#EB0A1E]'
         },
         {
             title: 'Richieste Approvate',
@@ -87,8 +87,8 @@ export default function Dashboard() {
             subtitle: 'Mie richieste',
             icon: CheckCircle2,
             color: 'from-green-500 to-green-600',
-            bg: 'bg-green-50 dark:bg-green-900/20',
-            text: 'text-green-600 dark:text-green-400'
+            bg: 'bg-green-50 dark:bg-green-900/10',
+            text: 'text-green-600 dark:text-green-500'
         },
         {
             title: 'In Attesa',
@@ -96,17 +96,17 @@ export default function Dashboard() {
             subtitle: 'Richieste pending',
             icon: Clock,
             color: 'from-amber-500 to-amber-600',
-            bg: 'bg-amber-50 dark:bg-amber-900/20',
-            text: 'text-amber-600 dark:text-amber-400'
+            bg: 'bg-amber-50 dark:bg-amber-900/10',
+            text: 'text-amber-600 dark:text-amber-500'
         },
         {
             title: 'Team',
             value: allUsers.length,
             subtitle: 'Membri del team',
             icon: Users,
-            color: 'from-purple-500 to-purple-600',
-            bg: 'bg-purple-50 dark:bg-purple-900/20',
-            text: 'text-purple-600 dark:text-purple-400'
+            color: 'from-neutral-700 to-neutral-800', // Toyota Gray/Black
+            bg: 'bg-neutral-50 dark:bg-neutral-900/10',
+            text: 'text-neutral-700 dark:text-neutral-400'
         },
     ];
 
@@ -158,14 +158,14 @@ export default function Dashboard() {
                 className="flex items-center justify-between"
             >
                 <div>
-                    <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-2">
+                    <h1 className="text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-white mb-2">
                         Dashboard
                     </h1>
-                    <p className="text-lg text-gray-500 dark:text-gray-400">
-                        Bentornato, <span className="font-semibold text-gray-800 dark:text-gray-200">{currentUser?.name}</span> 👋
+                    <p className="text-lg text-neutral-500 dark:text-neutral-400">
+                        Bentornato, <span className="font-semibold text-neutral-800 dark:text-neutral-200">{currentUser?.name}</span> 👋
                     </p>
                 </div>
-                <div className="hidden md:block text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 px-6 py-3 rounded-full shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="hidden md:block text-sm font-medium text-neutral-500 bg-white dark:bg-neutral-900 px-6 py-3 rounded-full shadow-sm border border-neutral-100 dark:border-neutral-800">
                     {format(new Date(), 'EEEE d MMMM yyyy', { locale: it })}
                 </div>
             </motion.div>
@@ -179,20 +179,20 @@ export default function Dashboard() {
             >
                 {/* 1. Vacation Stats */}
                 <motion.div variants={item} onClick={() => setActiveModal('VACATION')} className="cursor-pointer">
-                    <Card className="h-full border-none shadow-lg hover:shadow-2xl transition-all duration-300 group bg-white dark:bg-gray-900 border-l-4 border-l-blue-500">
+                    <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-neutral-900 border-l-4 border-l-[#EB0A1E]">
                         <CardContent className="flex items-start justify-between p-8">
                             <div className="space-y-4">
-                                <div className={`p-3 w-fit rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                <div className={`p-3 w-fit rounded-2xl bg-[#EB0A1E] shadow-lg shadow-red-500/20 group-hover:scale-110 transition-transform duration-300`}>
                                     <CalendarDays className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                    <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 tracking-wide uppercase">
                                         Ferie Disponibili
                                     </p>
-                                    <h3 className="text-4xl font-bold mt-1 text-gray-900 dark:text-white">
+                                    <h3 className="text-4xl font-bold mt-1 text-neutral-900 dark:text-white">
                                         {remainingDays}
                                     </h3>
-                                    <p className="text-sm mt-1 font-medium text-blue-600 dark:text-blue-400">
+                                    <p className="text-sm mt-1 font-medium text-[#EB0A1E]">
                                         su {totalDays} giorni
                                     </p>
                                 </div>
@@ -203,20 +203,20 @@ export default function Dashboard() {
 
                 {/* 2. Requests Stats (Approved) */}
                 <motion.div variants={item} onClick={() => setActiveModal('REQUESTS')} className="cursor-pointer">
-                    <Card className="h-full border-none shadow-lg hover:shadow-2xl transition-all duration-300 group bg-white dark:bg-gray-900 border-l-4 border-l-green-500">
+                    <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-neutral-900 border-l-4 border-l-green-500">
                         <CardContent className="flex items-start justify-between p-8">
                             <div className="space-y-4">
-                                <div className={`p-3 w-fit rounded-2xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                <div className={`p-3 w-fit rounded-2xl bg-green-500 shadow-lg shadow-green-500/20 group-hover:scale-110 transition-transform duration-300`}>
                                     <CheckCircle2 className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                    <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 tracking-wide uppercase">
                                         Richieste Approvate
                                     </p>
-                                    <h3 className="text-4xl font-bold mt-1 text-gray-900 dark:text-white">
+                                    <h3 className="text-4xl font-bold mt-1 text-neutral-900 dark:text-white">
                                         {approvedRequests}
                                     </h3>
-                                    <p className="text-sm mt-1 font-medium text-green-600 dark:text-green-400">
+                                    <p className="text-sm mt-1 font-medium text-green-600 dark:text-green-500">
                                         Mie richieste
                                     </p>
                                 </div>
@@ -227,20 +227,20 @@ export default function Dashboard() {
 
                 {/* 3. Pending Requests */}
                 <motion.div variants={item} onClick={() => setActiveModal('REQUESTS')} className="cursor-pointer">
-                    <Card className="h-full border-none shadow-lg hover:shadow-2xl transition-all duration-300 group bg-white dark:bg-gray-900 border-l-4 border-l-amber-500">
+                    <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-neutral-900 border-l-4 border-l-amber-500">
                         <CardContent className="flex items-start justify-between p-8">
                             <div className="space-y-4">
-                                <div className={`p-3 w-fit rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                <div className={`p-3 w-fit rounded-2xl bg-amber-500 shadow-lg shadow-amber-500/20 group-hover:scale-110 transition-transform duration-300`}>
                                     <Clock className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                    <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 tracking-wide uppercase">
                                         In Attesa
                                     </p>
-                                    <h3 className="text-4xl font-bold mt-1 text-gray-900 dark:text-white">
+                                    <h3 className="text-4xl font-bold mt-1 text-neutral-900 dark:text-white">
                                         {pendingRequests}
                                     </h3>
-                                    <p className="text-sm mt-1 font-medium text-amber-600 dark:text-amber-400">
+                                    <p className="text-sm mt-1 font-medium text-amber-600 dark:text-amber-500">
                                         Richieste pending
                                     </p>
                                 </div>
@@ -251,20 +251,20 @@ export default function Dashboard() {
 
                 {/* 4. Team Management */}
                 <motion.div variants={item} onClick={() => setActiveModal('TEAM')} className="cursor-pointer">
-                    <Card className="h-full border-none shadow-lg hover:shadow-2xl transition-all duration-300 group bg-white dark:bg-gray-900 border-l-4 border-l-purple-500">
+                    <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-neutral-900 border-l-4 border-l-neutral-500">
                         <CardContent className="flex items-start justify-between p-8">
                             <div className="space-y-4">
-                                <div className={`p-3 w-fit rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                <div className={`p-3 w-fit rounded-2xl bg-neutral-600 shadow-lg shadow-neutral-500/20 group-hover:scale-110 transition-transform duration-300`}>
                                     <Users className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wide uppercase">
+                                    <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 tracking-wide uppercase">
                                         Team
                                     </p>
-                                    <h3 className="text-4xl font-bold mt-1 text-gray-900 dark:text-white">
+                                    <h3 className="text-4xl font-bold mt-1 text-neutral-900 dark:text-white">
                                         {allUsers.length}
                                     </h3>
-                                    <p className="text-sm mt-1 font-medium text-purple-600 dark:text-purple-400">
+                                    <p className="text-sm mt-1 font-medium text-neutral-600 dark:text-neutral-400">
                                         Membri del team
                                     </p>
                                 </div>
@@ -280,41 +280,41 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
             >
-                <Card className="border-none shadow-2xl overflow-hidden bg-white dark:bg-gray-900">
-                    <CardHeader className="flex flex-row items-center justify-between p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
+                <Card className="border-none shadow-2xl overflow-hidden bg-white dark:bg-neutral-900">
+                    <CardHeader className="flex flex-row items-center justify-between p-8 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
                         <div>
                             <CardTitle className="text-2xl font-bold flex items-center gap-3">
-                                <CalendarDays className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                                <CalendarDays className="w-6 h-6 text-[#EB0A1E]" />
                                 Calendario Team
                             </CardTitle>
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm text-neutral-500 mt-1">
                                 Clicca su un giorno per inserire una nuova richiesta
                             </p>
                         </div>
-                        <div className="flex items-center gap-4 bg-white dark:bg-gray-800 p-1.5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                        <div className="flex items-center gap-4 bg-white dark:bg-neutral-800 p-1.5 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-700">
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() - 1)))}
-                                className="hover:bg-gray-100 dark:hover:bg-gray-700 w-8 h-8 p-0 rounded-lg"
+                                className="hover:bg-neutral-100 dark:hover:bg-neutral-700 w-8 h-8 p-0 rounded-lg"
                             >
                                 ←
                             </Button>
-                            <span className="font-semibold w-40 text-center text-gray-700 dark:text-gray-200">
+                            <span className="font-semibold w-40 text-center text-neutral-700 dark:text-neutral-200">
                                 {format(currentMonth, 'MMMM yyyy', { locale: it })}
                             </span>
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() + 1)))}
-                                className="hover:bg-gray-100 dark:hover:bg-gray-700 w-8 h-8 p-0 rounded-lg"
+                                className="hover:bg-neutral-100 dark:hover:bg-neutral-700 w-8 h-8 p-0 rounded-lg"
                             >
                                 →
                             </Button>
                         </div>
                     </CardHeader>
                     <CardContent className="p-8">
-                        <div className="flex items-center gap-6 mb-6 text-xs font-medium text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center gap-6 mb-6 text-xs font-medium text-neutral-500 dark:text-neutral-400">
                             <div className="flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-green-500"></span> Ferie
                             </div>
@@ -327,7 +327,7 @@ export default function Dashboard() {
                         </div>
                         <div className="grid grid-cols-7 gap-4 mb-6">
                             {['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'].map((day) => (
-                                <div key={day} className="text-center font-semibold text-xs text-gray-400 uppercase tracking-widest">
+                                <div key={day} className="text-center font-semibold text-xs text-neutral-400 uppercase tracking-widest">
                                     {day}
                                 </div>
                             ))}
@@ -348,7 +348,7 @@ export default function Dashboard() {
                                     return (
                                         <>
                                             {placeholders.map((_, i) => (
-                                                <div key={`empty-${i}`} className="min-h-[120px] bg-gray-50/30 dark:bg-gray-800/30 rounded-2xl" />
+                                                <div key={`empty-${i}`} className="min-h-[120px] bg-neutral-50/50 dark:bg-neutral-900/30 rounded-2xl" />
                                             ))}
                                             <DayCell
                                                 key={day.toString()}
@@ -422,13 +422,13 @@ function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveR
         <div
             onClick={onClick}
             className={`min-h-[120px] p-4 border rounded-3xl transition-all duration-200 cursor-pointer group relative overflow-hidden ${isToday
-                ? 'bg-blue-50/80 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 ring-2 ring-blue-400 ring-offset-2 dark:ring-offset-gray-900'
+                ? 'bg-red-50/80 border-red-200 dark:bg-red-900/20 dark:border-red-800 ring-2 ring-[#EB0A1E] ring-offset-2 dark:ring-offset-neutral-900' // Toyota Red Highlight
                 : holiday
                     ? 'bg-red-50/50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30'
-                    : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg hover:-translate-y-1'
+                    : 'bg-white dark:bg-neutral-900 border-neutral-100 dark:border-neutral-800 hover:border-red-300 dark:hover:border-red-700 hover:shadow-lg hover:-translate-y-1'
                 }`}>
             <div className="flex justify-between items-start mb-3">
-                <div className={`text-sm font-semibold ${isToday ? 'text-blue-600' : holiday ? 'text-red-500' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`}>
+                <div className={`text-sm font-semibold ${isToday ? 'text-[#EB0A1E]' : holiday ? 'text-red-500' : 'text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300'}`}>
                     {format(day, 'd')}
                 </div>
                 {holiday && (
@@ -457,10 +457,10 @@ function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveR
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: i * 0.05 }}
                             key={leave.id}
-                            className="flex items-center gap-2 p-1.5 rounded-full bg-white/80 dark:bg-gray-800/80 border border-gray-100 dark:border-gray-700 shadow-sm relative group/item"
+                            className="flex items-center gap-2 p-1.5 rounded-full bg-white/80 dark:bg-neutral-800/80 border border-neutral-100 dark:border-neutral-700 shadow-sm relative group/item"
                             title={`${user.name} - ${leave.type}${hasNotes ? `\nNote: ${leave.handoverNotes}` : ''}`}
                         >
-                            <div className={`w-5 h-5 rounded-full overflow-hidden bg-gray-100 ring-2 ${ringColor} shrink-0`}>
+                            <div className={`w-5 h-5 rounded-full overflow-hidden bg-neutral-100 ring-2 ${ringColor} shrink-0`}>
                                 <Image
                                     src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
                                     alt={user.name}
@@ -468,11 +468,11 @@ function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveR
                                     height={20}
                                 />
                             </div>
-                            <span className="truncate text-xs font-medium text-gray-700 dark:text-gray-300 max-w-[80px]">
+                            <span className="truncate text-xs font-medium text-neutral-700 dark:text-neutral-300 max-w-[80px]">
                                 {user.name.split(' ')[0]}
                             </span>
                             {hasNotes && (
-                                <div className="absolute -top-1 -right-1 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 p-0.5 rounded-full ring-1 ring-white dark:ring-gray-900" title="Note presenti">
+                                <div className="absolute -top-1 -right-1 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 p-0.5 rounded-full ring-1 ring-white dark:ring-neutral-900" title="Note presenti">
                                     <StickyNote className="w-2.5 h-2.5" />
                                 </div>
                             )}
@@ -480,14 +480,14 @@ function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveR
                     );
                 })}
                 {leaves.length > 3 && (
-                    <div className="text-[10px] text-center font-medium text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-full py-1">
+                    <div className="text-[10px] text-center font-medium text-neutral-400 bg-neutral-50 dark:bg-neutral-800 rounded-full py-1">
                         +{leaves.length - 3} altri
                     </div>
                 )}
             </div>
 
             {/* Hover visual cue */}
-            <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+            <div className="absolute inset-0 bg-[#EB0A1E]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
         </div>
     );
 }
