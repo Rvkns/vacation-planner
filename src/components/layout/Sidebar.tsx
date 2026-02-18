@@ -104,12 +104,7 @@ export default function Sidebar() {
                             </div>
                         </div>
 
-                        <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-700/50 flex justify-between items-center text-xs">
-                            <span className="text-neutral-500">Ferie residue</span>
-                            <span className="font-bold text-[#EB0A1E] bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-md">
-                                {currentUser.vacationDaysTotal - currentUser.vacationDaysUsed}gg
-                            </span>
-                        </div>
+
                     </div>
                 </div>
 
