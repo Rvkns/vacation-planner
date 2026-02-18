@@ -27,6 +27,8 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         department: user.department || '',
         bio: user.bio || '',
         phoneNumber: user.phoneNumber || '',
+        vacationDaysTotal: user.vacationDaysTotal || 0,
+        personalHoursTotal: user.personalHoursTotal || 0,
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -181,6 +183,32 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                                 placeholder="Breve descrizione di te..."
                                 className="min-h-[100px]"
                             />
+                        </div>
+
+                        <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+                            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                                Gestione Ferie e Permessi
+                            </h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Totale Giorni Ferie</label>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        value={formData.vacationDaysTotal}
+                                        onChange={(e) => setFormData({ ...formData, vacationDaysTotal: parseInt(e.target.value) || 0 })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Totale Ore Permessi</label>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        value={formData.personalHoursTotal}
+                                        onChange={(e) => setFormData({ ...formData, personalHoursTotal: parseInt(e.target.value) || 0 })}
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <div className="pt-4 flex justify-end">

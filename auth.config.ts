@@ -61,6 +61,8 @@ export default {
                     role: user.role,
                     vacationDaysTotal: user.vacationDaysTotal,
                     vacationDaysUsed: user.vacationDaysUsed,
+                    personalHoursTotal: user.personalHoursTotal,
+                    personalHoursUsed: user.personalHoursUsed,
                     avatarUrl: user.avatarUrl,
                 };
             },
@@ -76,6 +78,8 @@ export default {
                 token.role = user.role;
                 token.vacationDaysTotal = user.vacationDaysTotal;
                 token.vacationDaysUsed = user.vacationDaysUsed;
+                token.personalHoursTotal = user.personalHoursTotal;
+                token.personalHoursUsed = user.personalHoursUsed;
                 // Note: avatarUrl removed to prevent JWT size issues with Base64 images
             }
             return token;
@@ -86,6 +90,8 @@ export default {
                 session.user.role = token.role as 'ADMIN' | 'USER';
                 session.user.vacationDaysTotal = token.vacationDaysTotal as number;
                 session.user.vacationDaysUsed = token.vacationDaysUsed as number;
+                session.user.personalHoursTotal = token.personalHoursTotal as number;
+                session.user.personalHoursUsed = token.personalHoursUsed as number;
                 // avatarUrl will be fetched from DB when needed
             }
             return session;

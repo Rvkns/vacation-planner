@@ -24,6 +24,8 @@ export const users = pgTable('users', {
     phoneNumber: varchar('phone_number', { length: 50 }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    personalHoursTotal: integer('personal_hours_total').default(32).notNull(),
+    personalHoursUsed: integer('personal_hours_used').default(0).notNull(),
 }, (table) => ({
     uniqueIdentity: uniqueIndex('users_identity_unique').on(table.firstName, table.lastName, table.dateOfBirth),
 }));
@@ -34,6 +36,8 @@ export const leaveRequests = pgTable('leave_requests', {
     userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
     startDate: date('start_date').notNull(),
     endDate: date('end_date').notNull(),
+    startTime: varchar('start_time', { length: 5 }), // HH:mm
+    endTime: varchar('end_time', { length: 5 }),   // HH:mm
     type: leaveTypeEnum('type').notNull(),
     status: leaveStatusEnum('status').default('PENDING').notNull(),
     reason: text('reason'),

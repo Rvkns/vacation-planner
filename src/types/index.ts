@@ -14,6 +14,8 @@ export interface User {
     phoneNumber?: string | null;
     vacationDaysTotal: number;
     vacationDaysUsed: number;
+    personalHoursTotal: number;
+    personalHoursUsed: number;
 }
 
 // Leave Request types
@@ -25,6 +27,8 @@ export interface LeaveRequest {
     userId: string;
     startDate: string; // ISO date string
     endDate: string; // ISO date string
+    startTime?: string | null; // HH:mm
+    endTime?: string | null; // HH:mm
     type: LeaveType;
     status: LeaveStatus;
     reason?: string | null;
@@ -37,6 +41,8 @@ export interface LeaveRequest {
 export interface CreateLeaveRequest {
     startDate: string;
     endDate: string;
+    startTime?: string;
+    endTime?: string;
     type: LeaveType;
     reason?: string;
 }

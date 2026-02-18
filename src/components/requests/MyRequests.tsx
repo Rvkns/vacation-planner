@@ -50,6 +50,8 @@ export default function MyRequests() {
             const newRequest: CreateLeaveRequest = {
                 startDate: formData.startDate,
                 endDate: formData.endDate,
+                startTime: formData.type !== 'VACATION' ? formData.startTime : undefined,
+                endTime: formData.type !== 'VACATION' ? formData.endTime : undefined,
                 type: formData.type,
                 reason: formData.reason || undefined,
             };
@@ -163,6 +165,31 @@ export default function MyRequests() {
                                     <option value="PERSONAL">Permesso</option>
                                 </Select>
                             </div>
+
+                            {formData.type !== 'VACATION' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Ora Inizio
+                                        </label>
+                                        <Input
+                                            type="time"
+                                            value={formData.startTime || ''}
+                                            onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Ora Fine
+                                        </label>
+                                        <Input
+                                            type="time"
+                                            value={formData.endTime || ''}
+                                            onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

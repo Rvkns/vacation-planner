@@ -20,7 +20,10 @@ declare module 'next-auth' {
         lastName: string;
         role: 'ADMIN' | 'USER' | 'MANAGER';
         vacationDaysTotal: number;
+        vacationDaysTotal: number;
         vacationDaysUsed: number;
+        personalHoursTotal: number;
+        personalHoursUsed: number;
         avatarUrl: string | null;
     }
 }

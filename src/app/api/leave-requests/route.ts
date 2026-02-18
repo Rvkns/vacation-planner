@@ -8,6 +8,8 @@ import { z } from 'zod';
 const createLeaveRequestSchema = z.object({
     startDate: z.string(),
     endDate: z.string(),
+    startTime: z.string().optional(),
+    endTime: z.string().optional(),
     type: z.enum(['VACATION', 'SICK', 'PERSONAL']),
     reason: z.string().optional(),
     handoverNotes: z.string().optional(),
@@ -37,6 +39,8 @@ export async function GET(req: NextRequest) {
                         avatarUrl: true,
                         vacationDaysTotal: true,
                         vacationDaysUsed: true,
+                        personalHoursTotal: true,
+                        personalHoursUsed: true,
                     },
                 },
                 reviewer: {
@@ -90,13 +94,15 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const { startDate, endDate, type, reason } = validatedFields.data;
+        const { startDate, endDate, startTime, endTime, type, reason } = validatedFields.data;
 
         // Create leave request
         const [newRequest] = await db.insert(leaveRequests).values({
             userId: session.user.id,
             startDate,
             endDate,
+            startTime,
+            endTime,
             type,
             reason,
             handoverNotes: validatedFields.data.handoverNotes,

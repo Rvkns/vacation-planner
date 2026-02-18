@@ -13,6 +13,8 @@ const updateProfileSchema = z.object({
     bio: z.string().optional(),
     phoneNumber: z.string().optional(),
     avatarUrl: z.string().url().optional().or(z.literal('')),
+    vacationDaysTotal: z.number().int().min(0).optional(),
+    personalHoursTotal: z.number().int().min(0).optional(),
 });
 
 export async function PATCH(req: NextRequest) {
@@ -35,6 +37,8 @@ export async function PATCH(req: NextRequest) {
                 bio: validatedData.bio,
                 phoneNumber: validatedData.phoneNumber,
                 avatarUrl: validatedData.avatarUrl || null,
+                vacationDaysTotal: validatedData.vacationDaysTotal,
+                personalHoursTotal: validatedData.personalHoursTotal,
                 updatedAt: new Date(),
             })
             .where(eq(users.id, session.user.id))
@@ -49,6 +53,10 @@ export async function PATCH(req: NextRequest) {
                 department: users.department,
                 bio: users.bio,
                 phoneNumber: users.phoneNumber,
+                vacationDaysTotal: users.vacationDaysTotal,
+                vacationDaysUsed: users.vacationDaysUsed,
+                personalHoursTotal: users.personalHoursTotal,
+                personalHoursUsed: users.personalHoursUsed,
             });
 
         return NextResponse.json(updatedUser[0]);
@@ -57,6 +65,6 @@ export async function PATCH(req: NextRequest) {
         if (error instanceof z.ZodError) {
             return NextResponse.json({ error: 'Dati non validi', details: error.flatten() }, { status: 400 });
         }
-        return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 });
+        return NextResponse.json({ error: 'Errore interno del server' });
     }
 }
