@@ -181,7 +181,7 @@ export function TeamManagementModal({ isOpen, onClose, users, currentUserRole }:
                                 <Button
                                     size="sm"
                                     variant="outline"
-                                    className="text-xs h-8"
+                                    className="text-xs h-8 text-blue-600 hover:text-blue-700 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/20"
                                     onClick={() => handleRoleUpdate(user.id, 'MANAGER')}
                                     disabled={updatingUserId === user.id}
                                 >
