@@ -11,7 +11,9 @@ import { CalendarDays } from 'lucide-react';
 
 export default function LoginForm() {
     const router = useRouter();
-    const [email, setEmail] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [dateOfBirth, setDateOfBirth] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -23,13 +25,15 @@ export default function LoginForm() {
 
         try {
             const result = await signIn('credentials', {
-                email,
+                firstName,
+                lastName,
+                dateOfBirth,
                 password,
                 redirect: false,
             });
 
             if (result?.error) {
-                setError('Email o password non validi');
+                setError('Dati non validi o password errata');
             } else {
                 router.push('/');
                 router.refresh();
@@ -59,15 +63,43 @@ export default function LoginForm() {
                             </div>
                         )}
 
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Nome
+                                </label>
+                                <Input
+                                    type="text"
+                                    value={firstName}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                    placeholder="Mario"
+                                    required
+                                    disabled={isLoading}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Cognome
+                                </label>
+                                <Input
+                                    type="text"
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                    placeholder="Rossi"
+                                    required
+                                    disabled={isLoading}
+                                />
+                            </div>
+                        </div>
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Email
+                                Data di nascita
                             </label>
                             <Input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="nome@example.com"
+                                type="date"
+                                value={dateOfBirth}
+                                onChange={(e) => setDateOfBirth(e.target.value)}
                                 required
                                 disabled={isLoading}
                             />

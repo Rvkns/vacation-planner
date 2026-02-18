@@ -14,8 +14,10 @@ declare module 'next-auth' {
 
     interface User {
         id: string;
-        email: string;
+        email: string;   // kept as required by NextAuth base type; always '' in this system
         name: string;
+        firstName: string;
+        lastName: string;
         role: 'ADMIN' | 'USER' | 'MANAGER';
         vacationDaysTotal: number;
         vacationDaysUsed: number;

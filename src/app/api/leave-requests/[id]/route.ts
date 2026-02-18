@@ -87,7 +87,8 @@ export async function PATCH(
                     columns: {
                         id: true,
                         name: true,
-                        email: true,
+                        firstName: true,
+                        lastName: true,
                         avatarUrl: true,
                     },
                 },

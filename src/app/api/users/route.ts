@@ -14,7 +14,8 @@ export async function GET() {
         const allUsers = await db.query.users.findMany({
             columns: {
                 id: true,
-                email: true,
+                firstName: true,
+                lastName: true,
                 name: true,
                 role: true,
                 vacationDaysTotal: true,

@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { users } from '@/db/schema';
-import { eq, count } from 'drizzle-orm';
+import { eq, and, count } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 
 const registerSchema = z.object({
-    email: z.string().email('Email non valida'),
+    firstName: z.string().min(2, 'Il nome deve essere di almeno 2 caratteri'),
+    lastName: z.string().min(2, 'Il cognome deve essere di almeno 2 caratteri'),
+    dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data di nascita non valida (formato YYYY-MM-DD)'),
     password: z.string().min(6, 'La password deve essere di almeno 6 caratteri'),
-    name: z.string().min(2, 'Il nome deve essere di almeno 2 caratteri'),
 });
 
 export async function POST(req: NextRequest) {
@@ -23,16 +24,20 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const { email, password, name } = validatedFields.data;
+        const { firstName, lastName, dateOfBirth, password } = validatedFields.data;
 
-        // Check if user already exists
+        // Check if user already exists (same firstName + lastName + dateOfBirth)
         const existingUser = await db.query.users.findFirst({
-            where: eq(users.email, email),
+            where: and(
+                eq(users.firstName, firstName),
+                eq(users.lastName, lastName),
+                eq(users.dateOfBirth, dateOfBirth),
+            ),
         });
 
         if (existingUser) {
             return NextResponse.json(
-                { error: 'Email già registrata' },
+                { error: 'Esiste già un account con questi dati anagrafici' },
                 { status: 400 }
             );
         }
@@ -44,14 +49,19 @@ export async function POST(req: NextRequest) {
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Compose display name
+        const displayName = `${firstName} ${lastName}`;
+
         // Generate avatar URL
-        const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`;
+        const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`;
 
         // Create user
         const [newUser] = await db.insert(users).values({
-            email,
+            firstName,
+            lastName,
+            dateOfBirth,
             password: hashedPassword,
-            name,
+            name: displayName,
             role: isFirstUser ? 'ADMIN' : 'USER',
             vacationDaysTotal: 22,
             vacationDaysUsed: 0,

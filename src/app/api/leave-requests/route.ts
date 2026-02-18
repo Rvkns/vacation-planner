@@ -32,7 +32,8 @@ export async function GET(req: NextRequest) {
                     columns: {
                         id: true,
                         name: true,
-                        email: true,
+                        firstName: true,
+                        lastName: true,
                         avatarUrl: true,
                         vacationDaysTotal: true,
                         vacationDaysUsed: true,
@@ -110,7 +111,8 @@ export async function POST(req: NextRequest) {
                     columns: {
                         id: true,
                         name: true,
-                        email: true,
+                        firstName: true,
+                        lastName: true,
                         avatarUrl: true,
                     },
                 },

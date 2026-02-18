@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, integer, timestamp, pgEnum, text, date } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, integer, timestamp, pgEnum, text, date, uniqueIndex } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Enums
@@ -9,7 +9,9 @@ export const leaveStatusEnum = pgEnum('leave_status', ['PENDING', 'APPROVED', 'R
 // Users table
 export const users = pgTable('users', {
     id: uuid('id').defaultRandom().primaryKey(),
-    email: varchar('email', { length: 255 }).notNull().unique(),
+    firstName: varchar('first_name', { length: 255 }).notNull(),
+    lastName: varchar('last_name', { length: 255 }).notNull(),
+    dateOfBirth: date('date_of_birth').notNull(),
     password: varchar('password', { length: 255 }).notNull(),
     name: varchar('name', { length: 255 }).notNull(),
     role: userRoleEnum('role').default('USER').notNull(),
@@ -22,7 +24,9 @@ export const users = pgTable('users', {
     phoneNumber: varchar('phone_number', { length: 50 }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => ({
+    uniqueIdentity: uniqueIndex('users_identity_unique').on(table.firstName, table.lastName, table.dateOfBirth),
+}));
 
 // Leave requests table
 export const leaveRequests = pgTable('leave_requests', {

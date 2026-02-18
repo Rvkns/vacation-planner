@@ -41,7 +41,8 @@ export async function PATCH(req: NextRequest) {
             .returning({
                 id: users.id,
                 name: users.name,
-                email: users.email,
+                firstName: users.firstName,
+                lastName: users.lastName,
                 role: users.role,
                 avatarUrl: users.avatarUrl,
                 jobTitle: users.jobTitle,
