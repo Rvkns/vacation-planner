@@ -21,6 +21,8 @@ export default function RequestForm({ initialDate, onSuccess, onCancel }: Reques
     const [formData, setFormData] = useState<CreateLeaveRequest & { handoverNotes?: string }>({
         startDate: format(initialDate || new Date(), 'yyyy-MM-dd'),
         endDate: format(initialDate || new Date(), 'yyyy-MM-dd'),
+        startTime: undefined,
+        endTime: undefined,
         type: 'VACATION',
         reason: '',
         handoverNotes: '',
@@ -88,6 +90,31 @@ export default function RequestForm({ initialDate, onSuccess, onCancel }: Reques
                     <option value="PERSONAL">Permesso 🏠</option>
                 </Select>
             </div>
+
+            {formData.type !== 'VACATION' && (
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Ora Inizio
+                        </label>
+                        <Input
+                            type="time"
+                            value={formData.startTime || ''}
+                            onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Ora Fine
+                        </label>
+                        <Input
+                            type="time"
+                            value={formData.endTime || ''}
+                            onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                        />
+                    </div>
+                </div>
+            )}
 
             <div className="space-y-4"> {/* Changed to space-y-4 for spacing between the two textareas */}
                 <div>
