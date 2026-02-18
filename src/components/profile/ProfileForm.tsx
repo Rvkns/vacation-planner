@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { User } from '@/types';
@@ -30,6 +30,20 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         vacationDaysTotal: user.vacationDaysTotal || 0,
         personalHoursTotal: user.personalHoursTotal || 0,
     });
+
+    // Sync state with user prop when it changes (e.g. after refresh)
+    useEffect(() => {
+        setFormData({
+            name: user.name || '',
+            avatarUrl: user.avatarUrl || '',
+            jobTitle: user.jobTitle || '',
+            department: user.department || '',
+            bio: user.bio || '',
+            phoneNumber: user.phoneNumber || '',
+            vacationDaysTotal: user.vacationDaysTotal || 0,
+            personalHoursTotal: user.personalHoursTotal || 0,
+        });
+    }, [user]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
