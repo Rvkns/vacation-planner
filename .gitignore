@@ -39,5 +39,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# drizzle
-drizzle/
+# drizzle - migration SQL files are tracked; snapshot JSON files are not needed
+drizzle/meta/
