@@ -111,10 +111,6 @@ export default function Sidebar() {
                 {/* Navigation Links */}
                 <nav className="flex-1 px-4 space-y-1 overflow-y-auto py-2">
                     {navigation.map((item) => {
-                        if (item.href === '/team-requests' && currentUser.role !== 'ADMIN') {
-                            return null;
-                        }
-
                         const isActive = pathname === item.href;
                         const Icon = item.icon;
 

@@ -19,7 +19,7 @@ export default function TeamRequests() {
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!currentUser || currentUser.role !== 'ADMIN') return;
+            if (!currentUser) return;
 
             try {
                 const [requestsRes, usersRes] = await Promise.all([
@@ -54,22 +54,8 @@ export default function TeamRequests() {
         return labels[type] || type;
     };
 
-    if (!currentUser || currentUser.role !== 'ADMIN') {
-        return (
-            <div className="p-6 lg:p-8">
-                <Card>
-                    <CardContent className="p-12 text-center">
-                        <UsersIcon className="w-16 h-16 mx-auto text-red-500 mb-4" />
-                        <p className="text-lg font-medium text-gray-900 dark:text-white">
-                            Accesso Negato
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            Solo i manager possono accedere a questa sezione
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
-        );
+    if (!currentUser) {
+        return null;
     }
 
     return (
