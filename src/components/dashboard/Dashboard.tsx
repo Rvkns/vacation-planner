@@ -16,6 +16,8 @@ import Modal from '@/components/ui/Modal';
 import RequestForm from '@/components/requests/RequestForm';
 import { VacationStatsModal, TeamManagementModal } from '@/components/dashboard/StatsModals';
 
+type UserColorFn = (userId: string) => { ring: string; bg: string; text: string; hex: string };
+
 export default function Dashboard() {
     const { data: session } = useSession();
     const currentUser = session?.user;
@@ -26,28 +28,28 @@ export default function Dashboard() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [requestsRes, usersRes] = await Promise.all([
-                    fetch('/api/leave-requests'),
-                    fetch('/api/users')
-                ]);
+    const fetchData = async () => {
+        try {
+            const [requestsRes, usersRes] = await Promise.all([
+                fetch('/api/leave-requests'),
+                fetch('/api/users')
+            ]);
 
-                if (requestsRes.ok) {
-                    const data = await requestsRes.json();
-                    setLeaveRequests(data);
-                }
-
-                if (usersRes.ok) {
-                    const data = await usersRes.json();
-                    setAllUsers(data);
-                }
-            } catch (error) {
-                console.error('Error fetching dashboard data:', error);
+            if (requestsRes.ok) {
+                const data = await requestsRes.json();
+                setLeaveRequests(data);
             }
-        };
 
+            if (usersRes.ok) {
+                const data = await usersRes.json();
+                setAllUsers(data);
+            }
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+        }
+    };
+
+    useEffect(() => {
         if (session) {
             fetchData();
         }
@@ -367,6 +369,7 @@ export default function Dashboard() {
                 onClose={() => setActiveModal(null)}
                 total={totalDays}
                 used={usedDays}
+                onUpdate={fetchData}
             />
 
 
@@ -393,8 +396,6 @@ export default function Dashboard() {
         </div>
     );
 }
-
-type UserColorFn = (userId: string) => { ring: string; bg: string; text: string; hex: string };
 
 function DayCell({ day, leaves, allUsers, getUserColor, onClick }: {
     day: Date;

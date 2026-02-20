@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, integer, timestamp, pgEnum, text, date, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, integer, timestamp, pgEnum, text, date, uniqueIndex, real } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Enums
@@ -15,8 +15,8 @@ export const users = pgTable('users', {
     password: varchar('password', { length: 255 }).notNull(),
     name: varchar('name', { length: 255 }).notNull(),
     role: userRoleEnum('role').default('USER').notNull(),
-    vacationDaysTotal: integer('vacation_days_total').default(22).notNull(),
-    vacationDaysUsed: integer('vacation_days_used').default(0).notNull(),
+    vacationDaysTotal: real('vacation_days_total').default(22).notNull(),
+    vacationDaysUsed: real('vacation_days_used').default(0).notNull(),
     avatarUrl: text('avatar_url'),
     jobTitle: varchar('job_title', { length: 255 }),
     department: varchar('department', { length: 255 }),

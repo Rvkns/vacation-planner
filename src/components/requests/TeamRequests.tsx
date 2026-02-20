@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { leaveService } from '@/services/leaveService';
 import { Users as UsersIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
@@ -102,9 +103,7 @@ export default function TeamRequests() {
                         const user = allUsers.find((u) => u.id === request.userId);
                         if (!user) return null;
 
-                        const dayCount = Math.ceil(
-                            (new Date(request.endDate).getTime() - new Date(request.startDate).getTime()) / (1000 * 60 * 60 * 24)
-                        ) + 1;
+                        const dayCount = leaveService.calculateDays(request);
 
                         return (
                             <Card key={request.id} className="hover:shadow-xl transition-all">
@@ -139,7 +138,12 @@ export default function TeamRequests() {
                                                 </p>
                                                 <p>
                                                     <span className="font-medium">Durata:</span>{' '}
-                                                    {dayCount} {dayCount === 1 ? 'giorno' : 'giorni'}
+                                                    {dayCount} {dayCount === 1 || dayCount === 0.5 ? 'giorno' : 'giorni'}
+                                                    {request.type === 'VACATION' && request.startTime && request.endTime && (
+                                                        <span className="ml-2 text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 px-2 py-0.5 rounded-full">
+                                                            {request.startTime === '09:00' ? 'Mattina' : 'Pomeriggio'}
+                                                        </span>
+                                                    )}
                                                 </p>
                                                 {request.reason && (
                                                     <p>

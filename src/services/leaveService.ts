@@ -38,11 +38,16 @@ class LeaveService {
         return response.ok;
     }
 
-    calculateDays(startDate: string, endDate: string): number {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
+    calculateDays(request: LeaveRequest): number {
+        const start = new Date(request.startDate);
+        const end = new Date(request.endDate);
         const diffTime = Math.abs(end.getTime() - start.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+        if (request.type === 'VACATION' && request.startTime && request.endTime) {
+            diffDays = 0.5;
+        }
+
         return diffDays;
     }
 

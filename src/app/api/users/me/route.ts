@@ -13,8 +13,8 @@ const updateProfileSchema = z.object({
     bio: z.string().optional(),
     phoneNumber: z.string().optional(),
     avatarUrl: z.string().url().optional().or(z.literal('')),
-    vacationDaysTotal: z.number().int().min(0).optional(),
-    personalHoursTotal: z.number().int().min(0).optional(),
+    vacationDaysTotal: z.number().min(0).optional(),
+    personalHoursTotal: z.number().min(0).optional(),
 });
 
 export async function PATCH(req: NextRequest) {

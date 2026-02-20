@@ -7,7 +7,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, 
 import { Button } from '@/components/ui/Button';
 import { useState } from 'react';
 import Image from 'next/image';
-import { Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Shield, ShieldAlert, ShieldCheck, Pencil, Check, X, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 // --- Vacation Stats Modal ---
@@ -16,10 +16,45 @@ interface VacationStatsModalProps {
     onClose: () => void;
     total: number;
     used: number;
+    onUpdate?: () => void;
 }
 
-export function VacationStatsModal({ isOpen, onClose, total, used }: VacationStatsModalProps) {
+export function VacationStatsModal({ isOpen, onClose, total, used, onUpdate }: VacationStatsModalProps) {
     const remaining = total - used;
+    const [isEditing, setIsEditing] = useState(false);
+    const [newRemaining, setNewRemaining] = useState(remaining.toString());
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSave = async () => {
+        const remainingVal = parseFloat(newRemaining);
+        if (isNaN(remainingVal) || remainingVal < 0) {
+            alert("Inserisci un numero valido maggiore o uguale a 0");
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            const newTotal = remainingVal + used;
+            const res = await fetch('/api/users/me', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ vacationDaysTotal: newTotal })
+            });
+
+            if (res.ok) {
+                setIsEditing(false);
+                if (onUpdate) onUpdate();
+            } else {
+                alert("Errore durante l'aggiornamento.");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Errore di connessione");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     const data = [
         { name: 'Usate', value: used, color: '#a3a3a3' }, // neutral-400
         { name: 'Rimanenti', value: remaining, color: '#EB0A1E' }, // Toyota Red
@@ -48,13 +83,49 @@ export function VacationStatsModal({ isOpen, onClose, total, used }: VacationSta
                     </PieChart>
                 </ResponsiveContainer>
             </div>
-            <div className="text-center mt-4 space-y-2">
+            <div className="text-center mt-4 space-y-4">
                 <p className="text-lg font-medium text-neutral-900 dark:text-neutral-100">
                     Hai usato <span className="font-bold text-neutral-500">{used}</span> giorni su <span className="font-bold">{total}</span>.
                 </p>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                    Ti rimangono <span className="text-[#EB0A1E] font-bold">{remaining}</span> giorni da pianificare! 🌴
-                </p>
+
+                {isEditing ? (
+                    <div className="flex items-center justify-center gap-2">
+                        <span className="text-sm text-neutral-500">Ti rimangono:</span>
+                        <input
+                            type="number"
+                            step="0.5"
+                            min="0"
+                            value={newRemaining}
+                            onChange={(e) => setNewRemaining(e.target.value)}
+                            className="w-20 px-2 py-1 text-center border border-neutral-300 dark:border-neutral-600 rounded-md focus:ring-[#EB0A1E] focus:border-[#EB0A1E] dark:bg-neutral-800"
+                        />
+                        <span className="text-sm text-neutral-500">giorni</span>
+                        <div className="flex gap-1 ml-2">
+                            <Button size="sm" onClick={handleSave} disabled={isSaving} className="h-8 w-8 p-0 bg-green-500 hover:bg-green-600">
+                                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving} className="h-8 w-8 p-0">
+                                <X className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-center gap-2">
+                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                            Ti rimangono <span className="text-[#EB0A1E] font-bold">{remaining}</span> giorni da pianificare! 🌴
+                        </p>
+                        <button
+                            onClick={() => {
+                                setNewRemaining(remaining.toString());
+                                setIsEditing(true);
+                            }}
+                            className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                            title="Modifica giorni rimanenti"
+                        >
+                            <Pencil className="w-4 h-4" />
+                        </button>
+                    </div>
+                )}
             </div>
         </Modal>
     );

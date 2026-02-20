@@ -220,7 +220,7 @@ export default function MyRequests() {
                     </Card>
                 ) : (
                     requests.map((request) => {
-                        const days = leaveService.calculateDays(request.startDate, request.endDate);
+                        const days = leaveService.calculateDays(request);
 
                         return (
                             <Card key={request.id} className="hover:shadow-xl transition-all">
@@ -243,7 +243,12 @@ export default function MyRequests() {
                                                     {format(new Date(request.endDate), 'dd MMMM yyyy', { locale: it })}
                                                 </p>
                                                 <p>
-                                                    <span className="font-medium">Durata:</span> {days} {days === 1 ? 'giorno' : 'giorni'}
+                                                    <span className="font-medium">Durata:</span> {days} {days === 1 || days === 0.5 ? 'giorno' : 'giorni'}
+                                                    {request.type === 'VACATION' && request.startTime && request.endTime && (
+                                                        <span className="ml-2 text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 px-2 py-0.5 rounded-full">
+                                                            {request.startTime === '09:00' ? 'Mattina' : 'Pomeriggio'}
+                                                        </span>
+                                                    )}
                                                 </p>
                                                 {request.reason && (
                                                     <p>

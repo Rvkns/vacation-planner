@@ -115,7 +115,13 @@ export async function POST(req: NextRequest) {
         const end = new Date(endDate);
 
         if (type === 'VACATION') {
-            const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+            let days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+            // If it's a half-day vacation (both startTime and endTime are provided)
+            if (startTime && endTime) {
+                days = 0.5;
+            }
+
             await db
                 .update(users)
                 .set({ vacationDaysUsed: sql`${users.vacationDaysUsed} + ${days}`, updatedAt: new Date() })

@@ -18,6 +18,7 @@ interface RequestFormProps {
 
 export default function RequestForm({ initialDate, onSuccess, onCancel }: RequestFormProps) {
     const [isLoading, setIsLoading] = useState(false);
+    const [vacationDuration, setVacationDuration] = useState<'FULL' | 'HALF_MORNING' | 'HALF_AFTERNOON'>('FULL');
     const [formData, setFormData] = useState<CreateLeaveRequest & { handoverNotes?: string }>({
         startDate: format(initialDate || new Date(), 'yyyy-MM-dd'),
         endDate: format(initialDate || new Date(), 'yyyy-MM-dd'),
@@ -41,8 +42,23 @@ export default function RequestForm({ initialDate, onSuccess, onCancel }: Reques
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+
+        const submitData = { ...formData };
+        if (submitData.type === 'VACATION') {
+            if (vacationDuration === 'HALF_MORNING') {
+                submitData.startTime = '09:00';
+                submitData.endTime = '13:00';
+            } else if (vacationDuration === 'HALF_AFTERNOON') {
+                submitData.startTime = '14:00';
+                submitData.endTime = '18:00';
+            } else {
+                submitData.startTime = undefined;
+                submitData.endTime = undefined;
+            }
+        }
+
         try {
-            await onSuccess(formData);
+            await onSuccess(submitData);
         } catch (error) {
             console.error(error);
         } finally {
@@ -90,6 +106,49 @@ export default function RequestForm({ initialDate, onSuccess, onCancel }: Reques
                     <option value="PERSONAL">Permesso 🏠</option>
                 </Select>
             </div>
+
+            {formData.type === 'VACATION' && (
+                <div className="space-y-3">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Durata
+                    </label>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="vacationDuration"
+                                value="FULL"
+                                checked={vacationDuration === 'FULL'}
+                                onChange={() => setVacationDuration('FULL')}
+                                className="text-[#EB0A1E] focus:ring-[#EB0A1E]"
+                            />
+                            <span className="text-sm text-gray-700 dark:text-gray-300">Giornata Intera</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="vacationDuration"
+                                value="HALF_MORNING"
+                                checked={vacationDuration === 'HALF_MORNING'}
+                                onChange={() => setVacationDuration('HALF_MORNING')}
+                                className="text-[#EB0A1E] focus:ring-[#EB0A1E]"
+                            />
+                            <span className="text-sm text-gray-700 dark:text-gray-300">Mezza Giornata (Mattina)</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="vacationDuration"
+                                value="HALF_AFTERNOON"
+                                checked={vacationDuration === 'HALF_AFTERNOON'}
+                                onChange={() => setVacationDuration('HALF_AFTERNOON')}
+                                className="text-[#EB0A1E] focus:ring-[#EB0A1E]"
+                            />
+                            <span className="text-sm text-gray-700 dark:text-gray-300">Mezza Giornata (Pomeriggio)</span>
+                        </label>
+                    </div>
+                </div>
+            )}
 
             {formData.type !== 'VACATION' && (
                 <div className="grid grid-cols-2 gap-4">

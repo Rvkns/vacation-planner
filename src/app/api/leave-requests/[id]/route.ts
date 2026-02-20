@@ -48,7 +48,13 @@ export async function DELETE(
         const end = new Date(request.endDate);
 
         if (request.type === 'VACATION') {
-            const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+            let days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+            // Refund only 0.5 if it was a half-day request
+            if (request.startTime && request.endTime) {
+                days = 0.5;
+            }
+
             await db
                 .update(users)
                 .set({ vacationDaysUsed: sql`GREATEST(0, ${users.vacationDaysUsed} - ${days})`, updatedAt: new Date() })
