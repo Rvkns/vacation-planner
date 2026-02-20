@@ -58,8 +58,10 @@ export default function Dashboard() {
     if (!session?.user) return null;
 
     // Calculate stats
-    const totalDays = currentUser?.vacationDaysTotal || 22;
-    const usedDays = currentUser?.vacationDaysUsed || 0;
+    // Use fresh user data from the database if available, to avoid stale NextAuth session caching
+    const freshUser = allUsers.find(u => u.id === currentUser?.id) || currentUser;
+    const totalDays = freshUser?.vacationDaysTotal ?? 22;
+    const usedDays = freshUser?.vacationDaysUsed ?? 0;
     const remainingDays = totalDays - usedDays;
 
     const myRequests = leaveRequests.filter(r => r.userId === currentUser?.id);
@@ -385,13 +387,82 @@ export default function Dashboard() {
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title="Nuova Richiesta"
+                title={selectedDate ? format(selectedDate, 'dd MMMM yyyy', { locale: it }) : "Nuova Richiesta"}
             >
-                <RequestForm
-                    initialDate={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined}
-                    onSuccess={handleRequestSuccess}
-                    onCancel={() => setIsModalOpen(false)}
-                />
+                {selectedDate && (() => {
+                    const dayLeaves = leaveRequests.filter(req =>
+                        isSameDay(new Date(req.startDate), selectedDate) ||
+                        (new Date(req.startDate) <= selectedDate && new Date(req.endDate) >= selectedDate)
+                    );
+
+                    if (dayLeaves.length > 0) {
+                        return (
+                            <div className="mb-6 space-y-3">
+                                <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+                                    <Users className="w-4 h-4 text-neutral-500" />
+                                    Assenze previste in questa data:
+                                </h3>
+                                <div className="space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                                    {dayLeaves.map(leave => {
+                                        const user = allUsers.find(u => u.id === leave.userId);
+                                        if (!user) return null;
+
+                                        const color = getUserColor(user.id);
+                                        const isHalfDay = leave.type === 'VACATION' && leave.startTime && leave.endTime;
+
+                                        return (
+                                            <div key={leave.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-8 h-8 rounded-full overflow-hidden shrink-0 ring-2 ${color.ring}`}>
+                                                        <Image
+                                                            src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
+                                                            alt={user.name}
+                                                            width={32}
+                                                            height={32}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-neutral-900 dark:text-white">
+                                                            {user.name}
+                                                        </p>
+                                                        <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                                                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300">
+                                                                {leave.type === 'VACATION' ? 'Ferie' : leave.type === 'SICK' ? 'Malattia' : 'Permesso'}
+                                                            </span>
+                                                            {isHalfDay && (
+                                                                <span className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full font-medium">
+                                                                    Mezza Giornata ({leave.startTime === '09:00' ? 'Mattina' : 'Pomeriggio'})
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {leave.handoverNotes && (
+                                                    <div className="text-xs text-neutral-500 dark:text-neutral-400 italic bg-white dark:bg-neutral-900 px-3 py-1.5 rounded-lg border border-neutral-100 dark:border-neutral-800 self-start sm:self-auto max-w-full sm:max-w-[200px] truncate" title={leave.handoverNotes}>
+                                                        "{leave.handoverNotes}"
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <div className="h-px w-full bg-neutral-200 dark:bg-neutral-800 my-4" />
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
+
+                <div className={selectedDate ? "" : "mt-2"}>
+                    <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
+                        Inserisci Nuova Richiesta
+                    </h3>
+                    <RequestForm
+                        initialDate={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined}
+                        onSuccess={handleRequestSuccess}
+                        onCancel={() => setIsModalOpen(false)}
+                    />
+                </div>
             </Modal>
         </div>
     );
