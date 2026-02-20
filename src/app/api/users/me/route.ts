@@ -7,7 +7,7 @@ import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
 const updateProfileSchema = z.object({
-    name: z.string().min(2, "Il nome deve avere almeno 2 caratteri"),
+    name: z.string().min(2, "Il nome deve avere almeno 2 caratteri").optional(),
     jobTitle: z.string().optional(),
     department: z.string().optional(),
     bio: z.string().optional(),
@@ -31,14 +31,14 @@ export async function PATCH(req: NextRequest) {
         const updatedUser = await db
             .update(users)
             .set({
-                name: validatedData.name,
-                jobTitle: validatedData.jobTitle,
-                department: validatedData.department,
-                bio: validatedData.bio,
-                phoneNumber: validatedData.phoneNumber,
-                avatarUrl: validatedData.avatarUrl || null,
-                vacationDaysTotal: validatedData.vacationDaysTotal,
-                personalHoursTotal: validatedData.personalHoursTotal,
+                ...(validatedData.name !== undefined && { name: validatedData.name }),
+                ...(validatedData.jobTitle !== undefined && { jobTitle: validatedData.jobTitle }),
+                ...(validatedData.department !== undefined && { department: validatedData.department }),
+                ...(validatedData.bio !== undefined && { bio: validatedData.bio }),
+                ...(validatedData.phoneNumber !== undefined && { phoneNumber: validatedData.phoneNumber }),
+                ...(validatedData.avatarUrl !== undefined && { avatarUrl: validatedData.avatarUrl === '' ? null : validatedData.avatarUrl }),
+                ...(validatedData.vacationDaysTotal !== undefined && { vacationDaysTotal: validatedData.vacationDaysTotal }),
+                ...(validatedData.personalHoursTotal !== undefined && { personalHoursTotal: validatedData.personalHoursTotal }),
                 updatedAt: new Date(),
             })
             .where(eq(users.id, session.user.id))
