@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession, signOut } from 'next-auth/react';
-import { CalendarDays, FileText, Users, LogOut, Menu, X, User as UserIcon } from 'lucide-react';
+import { CalendarDays, FileText, Users, LogOut, Menu, X, User as UserIcon, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -14,6 +14,7 @@ const navigation = [
     { name: 'Dashboard', href: '/', icon: CalendarDays },
     { name: 'Le mie richieste', href: '/my-requests', icon: FileText },
     { name: 'Richieste team', href: '/team-requests', icon: Users },
+    { name: 'Analytics & Riepilogo', href: '/analytics', icon: BarChart3 },
     { name: 'Profilo', href: '/profile', icon: UserIcon },
 ];
 
