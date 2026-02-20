@@ -454,9 +454,23 @@ export default function Dashboard() {
                 })()}
 
                 <div className={selectedDate ? "" : "mt-2"}>
-                    <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
-                        Inserisci Nuova Richiesta
-                    </h3>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
+                            Inserisci Nuova Richiesta
+                        </h3>
+                        {selectedDate && (
+                            <a
+                                href={`https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&subject=Assenza%20Pianificata&startdt=${format(selectedDate, "yyyy-MM-dd'T'09:00:00")}&enddt=${format(selectedDate, "yyyy-MM-dd'T'18:00:00")}&body=Assenza%20aggiunta%20da%20VacaPlanner`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-2 bg-[#0078D4]/10 text-[#0078D4] hover:bg-[#0078D4]/20 hover:text-[#0078D4] dark:bg-[#0078D4]/20 dark:hover:bg-[#0078D4]/30 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors"
+                                title="Apri in Outlook Calendar"
+                            >
+                                <CalendarDays className="w-4 h-4" />
+                                Pianifica in Outlook
+                            </a>
+                        )}
+                    </div>
                     <RequestForm
                         initialDate={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined}
                         onSuccess={handleRequestSuccess}
@@ -485,7 +499,7 @@ function DayCell({ day, leaves, allUsers, getUserColor, onClick }: {
             className={`min-h-[120px] p-4 border rounded-3xl transition-all duration-200 cursor-pointer group relative overflow-hidden ${isToday
                 ? 'bg-red-50/80 border-red-200 dark:bg-red-900/20 dark:border-red-800 ring-2 ring-[#EB0A1E] ring-offset-2 dark:ring-offset-neutral-900'
                 : holiday
-                    ? 'bg-red-50/50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30'
+                    ? 'bg-red-100 dark:bg-red-900/30 border-red-200 dark:border-red-800 ring-1 ring-red-200 dark:ring-red-800/50'
                     : 'bg-white dark:bg-neutral-900 border-neutral-100 dark:border-neutral-800 hover:border-red-300 dark:hover:border-red-700 hover:shadow-lg hover:-translate-y-1'
                 }`}>
             <div className="flex justify-between items-start mb-3">
