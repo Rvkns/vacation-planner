@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { db } from '@/db';
-import { leaveRequests } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { leaveRequests, users } from '@/db/schema';
+import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 const createLeaveRequestSchema = z.object({
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
 
         const { startDate, endDate, startTime, endTime, type, reason } = validatedFields.data;
 
-        // Create leave request
+        // Create leave request — auto-approved, no manual approval needed
         const [newRequest] = await db.insert(leaveRequests).values({
             userId: session.user.id,
             startDate,
@@ -106,8 +106,35 @@ export async function POST(req: NextRequest) {
             type,
             reason,
             handoverNotes: validatedFields.data.handoverNotes,
-            status: 'PENDING',
+            status: 'APPROVED',
+            reviewedBy: session.user.id,
         }).returning();
+
+        // Immediately update user balance
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (type === 'VACATION') {
+            const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+            await db
+                .update(users)
+                .set({ vacationDaysUsed: sql`${users.vacationDaysUsed} + ${days}`, updatedAt: new Date() })
+                .where(eq(users.id, session.user.id));
+        } else {
+            let hours = 0;
+            if (startTime && endTime) {
+                const [sh, sm] = startTime.split(':').map(Number);
+                const [eh, em] = endTime.split(':').map(Number);
+                hours = Math.max(0, (eh * 60 + em - (sh * 60 + sm)) / 60);
+            } else {
+                const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                hours = days * 8;
+            }
+            await db
+                .update(users)
+                .set({ personalHoursUsed: sql`${users.personalHoursUsed} + ${Math.round(hours)}`, updatedAt: new Date() })
+                .where(eq(users.id, session.user.id));
+        }
 
         // Fetch complete request with user data
         const completeRequest = await db.query.leaveRequests.findFirst({

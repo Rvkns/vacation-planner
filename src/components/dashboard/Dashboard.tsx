@@ -4,7 +4,7 @@
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { CalendarDays, CheckCircle2, Clock, Users, StickyNote } from 'lucide-react';
+import { CalendarDays, CheckCircle2, Clock, Users, StickyNote, User as UserIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { LeaveRequest, User } from '@/types';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
@@ -64,6 +64,23 @@ export default function Dashboard() {
     const approvedRequests = myRequests.filter(r => r.status === 'APPROVED').length;
     const pendingRequests = myRequests.filter(r => r.status === 'PENDING').length;
 
+    // Per-user color palette — deterministic by index in allUsers list
+    const USER_COLORS = [
+        { ring: 'ring-sky-500', bg: 'bg-sky-500', text: 'text-sky-600 dark:text-sky-400', hex: '#0ea5e9' },
+        { ring: 'ring-violet-500', bg: 'bg-violet-500', text: 'text-violet-600 dark:text-violet-400', hex: '#8b5cf6' },
+        { ring: 'ring-orange-500', bg: 'bg-orange-500', text: 'text-orange-600 dark:text-orange-400', hex: '#f97316' },
+        { ring: 'ring-emerald-500', bg: 'bg-emerald-500', text: 'text-emerald-600 dark:text-emerald-400', hex: '#10b981' },
+        { ring: 'ring-pink-500', bg: 'bg-pink-500', text: 'text-pink-600 dark:text-pink-400', hex: '#ec4899' },
+        { ring: 'ring-amber-500', bg: 'bg-amber-500', text: 'text-amber-600 dark:text-amber-400', hex: '#f59e0b' },
+        { ring: 'ring-teal-500', bg: 'bg-teal-500', text: 'text-teal-600 dark:text-teal-400', hex: '#14b8a6' },
+        { ring: 'ring-indigo-500', bg: 'bg-indigo-500', text: 'text-indigo-600 dark:text-indigo-400', hex: '#6366f1' },
+    ];
+
+    const getUserColor = (userId: string) => {
+        const idx = allUsers.findIndex(u => u.id === userId);
+        return USER_COLORS[Math.max(0, idx) % USER_COLORS.length];
+    };
+
     // Calendar logic
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
@@ -82,9 +99,9 @@ export default function Dashboard() {
             text: 'text-[#EB0A1E]'
         },
         {
-            title: 'Richieste Approvate',
+            title: 'Le mie Ferie',
             value: approvedRequests,
-            subtitle: 'Mie richieste',
+            subtitle: 'Richieste inserite',
             icon: CheckCircle2,
             color: 'from-green-500 to-green-600',
             bg: 'bg-green-50 dark:bg-green-900/10',
@@ -314,16 +331,17 @@ export default function Dashboard() {
                         </div>
                     </CardHeader>
                     <CardContent className="p-8">
-                        <div className="flex items-center gap-6 mb-6 text-xs font-medium text-neutral-500 dark:text-neutral-400">
-                            <div className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-green-500"></span> Ferie
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-red-500"></span> Malattia
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-amber-500"></span> Permesso
-                            </div>
+                        {/* Per-user color legend */}
+                        <div className="flex flex-wrap items-center gap-4 mb-6 text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                            {allUsers.map((u) => {
+                                const color = getUserColor(u.id);
+                                return (
+                                    <div key={u.id} className="flex items-center gap-1.5">
+                                        <span className={`w-2.5 h-2.5 rounded-full ${color.bg}`} />
+                                        <span className={color.text}>{u.name.split(' ')[0]}</span>
+                                    </div>
+                                );
+                            })}
                         </div>
                         <div className="grid grid-cols-7 gap-4 mb-6">
                             {['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'].map((day) => (
@@ -335,9 +353,8 @@ export default function Dashboard() {
                         <div className="grid grid-cols-7 gap-4">
                             {daysInMonth.map((day, dayIdx) => {
                                 const dayLeaves = leaveRequests.filter(req =>
-                                    req.status === 'APPROVED' &&
-                                    (isSameDay(new Date(req.startDate), day) ||
-                                        (new Date(req.startDate) <= day && new Date(req.endDate) >= day))
+                                    isSameDay(new Date(req.startDate), day) ||
+                                    (new Date(req.startDate) <= day && new Date(req.endDate) >= day)
                                 );
 
                                 // Add empty placeholders for start of month
@@ -355,6 +372,7 @@ export default function Dashboard() {
                                                 day={day}
                                                 leaves={dayLeaves}
                                                 allUsers={allUsers}
+                                                getUserColor={getUserColor}
                                                 onClick={() => handleDayClick(day)}
                                             />
                                         </>
@@ -367,6 +385,7 @@ export default function Dashboard() {
                                         day={day}
                                         leaves={dayLeaves}
                                         allUsers={allUsers}
+                                        getUserColor={getUserColor}
                                         onClick={() => handleDayClick(day)}
                                     />
                                 );
@@ -413,7 +432,15 @@ export default function Dashboard() {
     );
 }
 
-function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveRequest[], allUsers: User[], onClick: () => void }) {
+type UserColorFn = (userId: string) => { ring: string; bg: string; text: string; hex: string };
+
+function DayCell({ day, leaves, allUsers, getUserColor, onClick }: {
+    day: Date;
+    leaves: LeaveRequest[];
+    allUsers: User[];
+    getUserColor: UserColorFn;
+    onClick: () => void;
+}) {
     const isToday = isSameDay(day, new Date());
     const holidays = getHolidays(day.getFullYear());
     const holiday = isHoliday(day, holidays);
@@ -422,7 +449,7 @@ function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveR
         <div
             onClick={onClick}
             className={`min-h-[120px] p-4 border rounded-3xl transition-all duration-200 cursor-pointer group relative overflow-hidden ${isToday
-                ? 'bg-red-50/80 border-red-200 dark:bg-red-900/20 dark:border-red-800 ring-2 ring-[#EB0A1E] ring-offset-2 dark:ring-offset-neutral-900' // Toyota Red Highlight
+                ? 'bg-red-50/80 border-red-200 dark:bg-red-900/20 dark:border-red-800 ring-2 ring-[#EB0A1E] ring-offset-2 dark:ring-offset-neutral-900'
                 : holiday
                     ? 'bg-red-50/50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30'
                     : 'bg-white dark:bg-neutral-900 border-neutral-100 dark:border-neutral-800 hover:border-red-300 dark:hover:border-red-700 hover:shadow-lg hover:-translate-y-1'
@@ -438,17 +465,12 @@ function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveR
                 )}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
                 {leaves.slice(0, 3).map((leave, i) => {
                     const user = allUsers.find((u) => u.id === leave.userId);
                     if (!user) return null;
 
-                    const typeColors = {
-                        VACATION: 'ring-green-500 dark:ring-green-500',
-                        SICK: 'ring-red-500 dark:ring-red-500',
-                        PERSONAL: 'ring-amber-500 dark:ring-amber-500',
-                    };
-                    const ringColor = typeColors[leave.type as keyof typeof typeColors] || 'ring-gray-200 dark:ring-gray-700';
+                    const color = getUserColor(leave.userId);
                     const hasNotes = leave.handoverNotes && leave.handoverNotes.trim().length > 0;
 
                     return (
@@ -457,10 +479,10 @@ function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveR
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: i * 0.05 }}
                             key={leave.id}
-                            className="flex items-center gap-2 p-1.5 rounded-full bg-white/80 dark:bg-neutral-800/80 border border-neutral-100 dark:border-neutral-700 shadow-sm relative group/item"
+                            className="flex items-center gap-2 p-1.5 rounded-full bg-white/80 dark:bg-neutral-800/80 border border-neutral-100 dark:border-neutral-700 shadow-sm relative"
                             title={`${user.name} - ${leave.type}${hasNotes ? `\nNote: ${leave.handoverNotes}` : ''}`}
                         >
-                            <div className={`w-5 h-5 rounded-full overflow-hidden bg-neutral-100 ring-2 ${ringColor} shrink-0`}>
+                            <div className={`w-5 h-5 rounded-full overflow-hidden bg-neutral-100 ring-2 ${color.ring} shrink-0`}>
                                 <Image
                                     src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
                                     alt={user.name}
@@ -468,7 +490,7 @@ function DayCell({ day, leaves, allUsers, onClick }: { day: Date, leaves: LeaveR
                                     height={20}
                                 />
                             </div>
-                            <span className="truncate text-xs font-medium text-neutral-700 dark:text-neutral-300 max-w-[80px]">
+                            <span className={`truncate text-xs font-semibold max-w-[80px] ${color.text}`}>
                                 {user.name.split(' ')[0]}
                             </span>
                             {hasNotes && (
