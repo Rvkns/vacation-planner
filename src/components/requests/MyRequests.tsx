@@ -80,16 +80,6 @@ export default function MyRequests() {
         }
     };
 
-    const getStatusBadge = (status: string) => {
-        const variants: Record<string, { variant: 'default' | 'success' | 'warning' | 'danger'; label: string }> = {
-            PENDING: { variant: 'warning', label: 'In Attesa' },
-            APPROVED: { variant: 'success', label: 'Approvata' },
-            REJECTED: { variant: 'danger', label: 'Rifiutata' },
-        };
-        const config = variants[status] || variants.PENDING;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
-    };
-
     const getTypeLabel = (type: string) => {
         const labels: Record<string, string> = {
             VACATION: 'Ferie',
@@ -241,7 +231,6 @@ export default function MyRequests() {
                                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                                     {getTypeLabel(request.type)}
                                                 </h3>
-                                                {getStatusBadge(request.status)}
                                             </div>
 
                                             <div className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
@@ -267,16 +256,14 @@ export default function MyRequests() {
                                             </div>
                                         </div>
 
-                                        {request.status === 'PENDING' && (
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => handleDelete(request.id)}
-                                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                            >
-                                                <Trash2 className="w-5 h-5" />
-                                            </Button>
-                                        )}
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => handleDelete(request.id)}
+                                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                        >
+                                            <Trash2 className="w-5 h-5" />
+                                        </Button>
                                     </div>
                                 </CardContent>
                             </Card>

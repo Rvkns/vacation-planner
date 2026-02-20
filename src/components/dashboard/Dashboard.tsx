@@ -14,7 +14,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Modal from '@/components/ui/Modal';
 import RequestForm from '@/components/requests/RequestForm';
-import { VacationStatsModal, RequestStatsModal, TeamManagementModal } from '@/components/dashboard/StatsModals';
+import { VacationStatsModal, TeamManagementModal } from '@/components/dashboard/StatsModals';
 
 export default function Dashboard() {
     const { data: session } = useSession();
@@ -22,7 +22,7 @@ export default function Dashboard() {
     const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
     const [allUsers, setAllUsers] = useState<User[]>([]);
     const [currentMonth, setCurrentMonth] = useState(new Date());
-    const [activeModal, setActiveModal] = useState<'VACATION' | 'REQUESTS' | 'TEAM' | null>(null);
+    const [activeModal, setActiveModal] = useState<'VACATION' | 'TEAM' | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
@@ -61,8 +61,7 @@ export default function Dashboard() {
     const remainingDays = totalDays - usedDays;
 
     const myRequests = leaveRequests.filter(r => r.userId === currentUser?.id);
-    const approvedRequests = myRequests.filter(r => r.status === 'APPROVED').length;
-    const pendingRequests = myRequests.filter(r => r.status === 'PENDING').length;
+    const totalRequestsCount = myRequests.length;
 
     // Per-user color palette — deterministic by index in allUsers list
     const USER_COLORS = [
@@ -100,21 +99,12 @@ export default function Dashboard() {
         },
         {
             title: 'Le mie Ferie',
-            value: approvedRequests,
+            value: totalRequestsCount,
             subtitle: 'Richieste inserite',
             icon: CheckCircle2,
             color: 'from-green-500 to-green-600',
             bg: 'bg-green-50 dark:bg-green-900/10',
             text: 'text-green-600 dark:text-green-500'
-        },
-        {
-            title: 'In Attesa',
-            value: pendingRequests,
-            subtitle: 'Richieste pending',
-            icon: Clock,
-            color: 'from-amber-500 to-amber-600',
-            bg: 'bg-amber-50 dark:bg-amber-900/10',
-            text: 'text-amber-600 dark:text-amber-500'
         },
         {
             title: 'Team',
@@ -218,8 +208,8 @@ export default function Dashboard() {
                     </Card>
                 </motion.div>
 
-                {/* 2. Requests Stats (Approved) */}
-                <motion.div variants={item} onClick={() => setActiveModal('REQUESTS')} className="cursor-pointer">
+                {/* 2. Requests Stats */}
+                <motion.div variants={item}>
                     <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-neutral-900 border-l-4 border-l-green-500">
                         <CardContent className="flex items-start justify-between p-8">
                             <div className="space-y-4">
@@ -228,37 +218,13 @@ export default function Dashboard() {
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 tracking-wide uppercase">
-                                        Richieste Approvate
+                                        Mie Richieste
                                     </p>
                                     <h3 className="text-4xl font-bold mt-1 text-neutral-900 dark:text-white">
-                                        {approvedRequests}
+                                        {totalRequestsCount}
                                     </h3>
                                     <p className="text-sm mt-1 font-medium text-green-600 dark:text-green-500">
-                                        Mie richieste
-                                    </p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-
-                {/* 3. Pending Requests */}
-                <motion.div variants={item} onClick={() => setActiveModal('REQUESTS')} className="cursor-pointer">
-                    <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-neutral-900 border-l-4 border-l-amber-500">
-                        <CardContent className="flex items-start justify-between p-8">
-                            <div className="space-y-4">
-                                <div className={`p-3 w-fit rounded-2xl bg-amber-500 shadow-lg shadow-amber-500/20 group-hover:scale-110 transition-transform duration-300`}>
-                                    <Clock className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 tracking-wide uppercase">
-                                        In Attesa
-                                    </p>
-                                    <h3 className="text-4xl font-bold mt-1 text-neutral-900 dark:text-white">
-                                        {pendingRequests}
-                                    </h3>
-                                    <p className="text-sm mt-1 font-medium text-amber-600 dark:text-amber-500">
-                                        Richieste pending
+                                        Ferie/Permessi inviati
                                     </p>
                                 </div>
                             </div>
@@ -403,11 +369,7 @@ export default function Dashboard() {
                 used={usedDays}
             />
 
-            <RequestStatsModal
-                isOpen={activeModal === 'REQUESTS'}
-                onClose={() => setActiveModal(null)}
-                requests={myRequests}
-            />
+
 
             <TeamManagementModal
                 isOpen={activeModal === 'TEAM'}

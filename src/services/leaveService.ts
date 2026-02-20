@@ -14,12 +14,6 @@ class LeaveService {
         return response.json();
     }
 
-    async getPendingRequests(): Promise<LeaveRequest[]> {
-        const response = await fetch('/api/leave-requests?status=PENDING');
-        if (!response.ok) throw new Error('Failed to fetch pending requests');
-        return response.json();
-    }
-
     async getApprovedRequests(): Promise<LeaveRequest[]> {
         const response = await fetch('/api/leave-requests?status=APPROVED');
         if (!response.ok) throw new Error('Failed to fetch approved requests');
@@ -36,15 +30,6 @@ class LeaveService {
         return response.json();
     }
 
-    async updateRequestStatus(requestId: string, status: LeaveStatus): Promise<LeaveRequest> {
-        const response = await fetch(`/api/leave-requests/${requestId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status }),
-        });
-        if (!response.ok) throw new Error('Failed to update leave request');
-        return response.json();
-    }
 
     async deleteRequest(requestId: string): Promise<boolean> {
         const response = await fetch(`/api/leave-requests/${requestId}`, {
@@ -62,7 +47,7 @@ class LeaveService {
     }
 
     async getRequestsInDateRange(startDate: string, endDate: string): Promise<LeaveRequest[]> {
-        const requests = await this.getApprovedRequests();
+        const requests = await this.getAllRequests();
         const start = new Date(startDate);
         const end = new Date(endDate);
 

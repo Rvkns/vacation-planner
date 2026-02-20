@@ -53,16 +53,6 @@ export default function TeamRequests() {
         return labels[type] || type;
     };
 
-    const getStatusBadge = (status: string) => {
-        const variants: Record<string, { variant: 'default' | 'success' | 'warning' | 'danger'; label: string }> = {
-            PENDING: { variant: 'warning', label: 'In Attesa' },
-            APPROVED: { variant: 'success', label: 'Approvata' },
-            REJECTED: { variant: 'danger', label: 'Rifiutata' },
-        };
-        const config = variants[status] || variants.PENDING;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
-    };
-
     if (!currentUser || currentUser.role !== 'ADMIN') {
         return (
             <div className="p-6 lg:p-8">
@@ -136,7 +126,6 @@ export default function TeamRequests() {
                                                     {user.name}
                                                 </h3>
                                                 <Badge variant="default">{getTypeLabel(request.type)}</Badge>
-                                                {getStatusBadge(request.status)}
                                             </div>
 
                                             <div className="space-y-1 text-sm text-gray-600 dark:text-gray-300">

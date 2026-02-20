@@ -60,52 +60,6 @@ export function VacationStatsModal({ isOpen, onClose, total, used }: VacationSta
     );
 }
 
-// --- Request Stats Modal ---
-interface RequestStatsModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    requests: LeaveRequest[];
-}
-
-export function RequestStatsModal({ isOpen, onClose, requests }: RequestStatsModalProps) {
-    const statusCounts = {
-        APPROVED: 0,
-        PENDING: 0,
-        REJECTED: 0,
-    };
-
-    requests.forEach(r => {
-        if (statusCounts[r.status] !== undefined) {
-            statusCounts[r.status]++;
-        }
-    });
-
-    const data = [
-        { name: 'Approvate', value: statusCounts.APPROVED, fill: '#22c55e' }, // green-500
-        { name: 'In Attesa', value: statusCounts.PENDING, fill: '#f59e0b' }, // amber-500
-        { name: 'Rifiutate', value: statusCounts.REJECTED, fill: '#ef4444' }, // red-500
-    ];
-
-    return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Stato Richieste">
-            <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data}>
-                        <XAxis dataKey="name" stroke="#a3a3a3" />
-                        <YAxis allowDecimals={false} stroke="#a3a3a3" />
-                        <Tooltip />
-                        <Bar dataKey="value" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                </ResponsiveContainer>
-            </div>
-            <div className="text-center mt-4">
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                    Panoramica dello stato di tutte le tue richieste inviate.
-                </p>
-            </div>
-        </Modal>
-    );
-}
 
 // --- Team Management Modal ---
 interface TeamManagementModalProps {
