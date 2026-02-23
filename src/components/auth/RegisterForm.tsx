@@ -13,7 +13,9 @@ export default function RegisterForm() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [dateOfBirth, setDateOfBirth] = useState('');
+    const [confirmDateOfBirth, setConfirmDateOfBirth] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [registeredId, setRegisteredId] = useState<string | null>(null);
@@ -23,6 +25,18 @@ export default function RegisterForm() {
         e.preventDefault();
         setError('');
         setIsLoading(true);
+
+        if (dateOfBirth !== confirmDateOfBirth) {
+            setError('Le date di nascita non coincidono');
+            setIsLoading(false);
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            setError('Le password non coincidono');
+            setIsLoading(false);
+            return;
+        }
 
         try {
             const response = await fetch('/api/register', {
@@ -148,32 +162,62 @@ export default function RegisterForm() {
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                Data di nascita
-                            </label>
-                            <Input
-                                type="date"
-                                value={dateOfBirth}
-                                onChange={(e) => setDateOfBirth(e.target.value)}
-                                required
-                                disabled={isLoading}
-                            />
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                    Data di nascita
+                                </label>
+                                <Input
+                                    type="date"
+                                    value={dateOfBirth}
+                                    onChange={(e) => setDateOfBirth(e.target.value)}
+                                    required
+                                    disabled={isLoading}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                    Conferma data
+                                </label>
+                                <Input
+                                    type="date"
+                                    value={confirmDateOfBirth}
+                                    onChange={(e) => setConfirmDateOfBirth(e.target.value)}
+                                    required
+                                    disabled={isLoading}
+                                />
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                Password
-                            </label>
-                            <Input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Minimo 6 caratteri"
-                                required
-                                disabled={isLoading}
-                                minLength={6}
-                            />
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                    Password
+                                </label>
+                                <Input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Minimo 6 caratteri"
+                                    required
+                                    disabled={isLoading}
+                                    minLength={6}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                    Conferma password
+                                </label>
+                                <Input
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder="Ripeti password"
+                                    required
+                                    disabled={isLoading}
+                                    minLength={6}
+                                />
+                            </div>
                         </div>
 
                         <Button type="submit" className="w-full bg-[#EB0A1E] hover:bg-[#CC091A] text-white" disabled={isLoading}>
