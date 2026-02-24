@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
-import { Loader2, Save, User as UserIcon } from 'lucide-react';
+import { Loader2, Save, User as UserIcon, Check } from 'lucide-react';
 import Image from 'next/image';
+import { USER_COLORS } from '@/lib/colors';
 
 interface ProfileFormProps {
     user: User;
@@ -29,6 +30,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         phoneNumber: user.phoneNumber || '',
         vacationDaysTotal: user.vacationDaysTotal || 0,
         personalHoursTotal: user.personalHoursTotal || 0,
+        themeColor: user.themeColor || '',
     });
 
     // Sync state with user prop when it changes (e.g. after refresh)
@@ -42,6 +44,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
             phoneNumber: user.phoneNumber || '',
             vacationDaysTotal: user.vacationDaysTotal || 0,
             personalHoursTotal: user.personalHoursTotal || 0,
+            themeColor: user.themeColor || '',
         });
     }, [user]);
 
@@ -199,7 +202,28 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                             />
                         </div>
 
-
+                        <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                            <div>
+                                <label className="text-sm font-medium">Tema Profilo (Colore nel Calendario)</label>
+                                <p className="text-xs text-gray-500 mb-3 mt-1">Scegli il colore con cui verrai visualizzato dagli altri utenti nel calendario e nelle richieste.</p>
+                                <div className="flex flex-wrap gap-3">
+                                    {USER_COLORS.map((color) => (
+                                        <button
+                                            key={color.id}
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, themeColor: color.id })}
+                                            className={`
+                                                w-8 h-8 rounded-full flex items-center justify-center transition-all
+                                                ${color.bg} ${formData.themeColor === color.id ? 'ring-2 ring-offset-2 ring-gray-900 dark:ring-white dark:ring-offset-gray-900 scale-110 shadow-lg' : 'hover:scale-110 shadow-sm opacity-90 hover:opacity-100'}
+                                            `}
+                                            title={color.id}
+                                        >
+                                            {formData.themeColor === color.id && <Check className="w-4 h-4 text-white drop-shadow-md" />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
 
                         <div className="pt-4 flex justify-end">
                             <Button type="submit" disabled={isLoading} className="w-full md:w-auto">

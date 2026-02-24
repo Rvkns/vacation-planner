@@ -26,6 +26,7 @@ export const users = pgTable('users', {
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
     personalHoursTotal: integer('personal_hours_total').default(32).notNull(),
     personalHoursUsed: integer('personal_hours_used').default(0).notNull(),
+    themeColor: varchar('theme_color', { length: 50 }),
 }, (table) => ({
     uniqueIdentity: uniqueIndex('users_identity_unique').on(table.firstName, table.lastName, table.dateOfBirth),
 }));

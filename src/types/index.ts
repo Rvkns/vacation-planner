@@ -16,6 +16,7 @@ export interface User {
     vacationDaysUsed: number;
     personalHoursTotal: number;
     personalHoursUsed: number;
+    themeColor?: string | null;
 }
 
 // Leave Request types

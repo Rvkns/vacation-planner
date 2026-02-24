@@ -15,6 +15,7 @@ const updateProfileSchema = z.object({
     avatarUrl: z.string().url().optional().or(z.literal('')),
     vacationDaysTotal: z.number().min(0).optional(),
     personalHoursTotal: z.number().min(0).optional(),
+    themeColor: z.string().optional(),
 });
 
 export async function PATCH(req: NextRequest) {
@@ -39,6 +40,7 @@ export async function PATCH(req: NextRequest) {
                 ...(validatedData.avatarUrl !== undefined && { avatarUrl: validatedData.avatarUrl === '' ? null : validatedData.avatarUrl }),
                 ...(validatedData.vacationDaysTotal !== undefined && { vacationDaysTotal: validatedData.vacationDaysTotal }),
                 ...(validatedData.personalHoursTotal !== undefined && { personalHoursTotal: validatedData.personalHoursTotal }),
+                ...(validatedData.themeColor !== undefined && { themeColor: validatedData.themeColor }),
                 updatedAt: new Date(),
             })
             .where(eq(users.id, session.user.id))
@@ -57,6 +59,7 @@ export async function PATCH(req: NextRequest) {
                 vacationDaysUsed: users.vacationDaysUsed,
                 personalHoursTotal: users.personalHoursTotal,
                 personalHoursUsed: users.personalHoursUsed,
+                themeColor: users.themeColor,
             });
 
         return NextResponse.json(updatedUser[0]);
