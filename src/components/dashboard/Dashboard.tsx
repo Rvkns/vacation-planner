@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { CalendarDays, CheckCircle2, Clock, Users, StickyNote, User as UserIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { LeaveRequest, User } from '@/types';
+import { leaveService } from '@/services/leaveService';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { getHolidays, isHoliday } from '@/lib/holidays';
@@ -434,6 +435,11 @@ export default function Dashboard() {
                                                                     Mezza Giornata ({leave.startTime === '09:00' ? 'Mattina' : 'Pomeriggio'})
                                                                 </span>
                                                             )}
+                                                            {leave.type === 'PERSONAL' && leave.startTime && leave.endTime && (
+                                                                <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full font-medium">
+                                                                    {leaveService.calculateTotalHours(leave)} {leaveService.calculateTotalHours(leave) === 1 ? 'ora' : 'ore'} ({leave.startTime} - {leave.endTime})
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -528,7 +534,7 @@ function DayCell({ day, leaves, allUsers, getUserColor, onClick }: {
                             transition={{ delay: i * 0.05 }}
                             key={leave.id}
                             className="flex items-center gap-2 p-1.5 rounded-full bg-white/80 dark:bg-neutral-800/80 border border-neutral-100 dark:border-neutral-700 shadow-sm relative"
-                            title={`${user.name} - ${leave.type}${hasNotes ? `\nNote: ${leave.handoverNotes}` : ''}`}
+                            title={`${user.name} - ${leave.type === 'VACATION' ? 'Ferie' : leave.type === 'SICK' ? 'Malattia' : 'Permesso'}${leave.type === 'PERSONAL' && leave.startTime && leave.endTime ? ` (${leave.startTime} - ${leave.endTime})` : ''}${hasNotes ? `\nNote: ${leave.handoverNotes}` : ''}`}
                         >
                             <div className={`w-5 h-5 rounded-full overflow-hidden bg-neutral-100 ring-2 ${color.ring} shrink-0`}>
                                 <Image
@@ -538,8 +544,8 @@ function DayCell({ day, leaves, allUsers, getUserColor, onClick }: {
                                     height={20}
                                 />
                             </div>
-                            <span className={`truncate text-xs font-semibold max-w-[80px] ${color.text}`}>
-                                {user.name.split(' ')[0]}
+                            <span className={`truncate text-xs font-semibold max-w-[100px] ${color.text}`}>
+                                {user.name.split(' ')[0]}{leave.type === 'PERSONAL' && leave.startTime && leave.endTime ? ` (${leaveService.calculateTotalHours(leave)}h)` : ''}
                             </span>
                             {hasNotes && (
                                 <div className="absolute -top-1 -right-1 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 p-0.5 rounded-full ring-1 ring-white dark:ring-neutral-900" title="Note presenti">

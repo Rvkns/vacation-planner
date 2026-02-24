@@ -90,6 +90,8 @@ export default function TeamRequests() {
                         if (!user) return null;
 
                         const dayCount = leaveService.calculateDays(request);
+                        const isPersonalHourly = request.type === 'PERSONAL' && request.startTime && request.endTime;
+                        const hoursCount = isPersonalHourly ? leaveService.calculateTotalHours(request) : 0;
 
                         return (
                             <Card key={request.id} className="hover:shadow-xl transition-all">
@@ -124,7 +126,11 @@ export default function TeamRequests() {
                                                 </p>
                                                 <p>
                                                     <span className="font-medium">Durata:</span>{' '}
-                                                    {dayCount} {dayCount === 1 || dayCount === 0.5 ? 'giorno' : 'giorni'}
+                                                    {isPersonalHourly ? (
+                                                        <>{hoursCount} {hoursCount === 1 ? 'ora' : 'ore'} <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full ml-1">({request.startTime} - {request.endTime})</span></>
+                                                    ) : (
+                                                        <>{dayCount} {dayCount === 1 || dayCount === 0.5 ? 'giorno' : 'giorni'}</>
+                                                    )}
                                                     {request.type === 'VACATION' && request.startTime && request.endTime && (
                                                         <span className="ml-2 text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 px-2 py-0.5 rounded-full">
                                                             {request.startTime === '09:00' ? 'Mattina' : 'Pomeriggio'}

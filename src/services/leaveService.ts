@@ -51,6 +51,14 @@ class LeaveService {
         return diffDays;
     }
 
+    calculateTotalHours(request: LeaveRequest): number {
+        if (!request.startTime || !request.endTime) return 0;
+        const [startH, startM] = request.startTime.split(':').map(Number);
+        const [endH, endM] = request.endTime.split(':').map(Number);
+        const diffHours = (endH + endM / 60) - (startH + startM / 60);
+        return diffHours > 0 ? diffHours : 0;
+    }
+
     async getRequestsInDateRange(startDate: string, endDate: string): Promise<LeaveRequest[]> {
         const requests = await this.getAllRequests();
         const start = new Date(startDate);
