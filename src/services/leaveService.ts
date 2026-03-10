@@ -39,16 +39,18 @@ class LeaveService {
     }
 
     calculateDays(request: LeaveRequest): number {
+        // If start/end times are provided, calculate the actual fractional day
+        // regardless of leave type (VACATION, PERSONAL, SICK, etc.)
+        if (request.startTime && request.endTime) {
+            const hours = this.calculateTotalHours(request);
+            // Normalize against an 8-hour workday; e.g. 3h → 0.375, 4h → 0.5
+            return hours > 0 ? hours / 8 : 0;
+        }
+
         const start = new Date(request.startDate);
         const end = new Date(request.endDate);
         const diffTime = Math.abs(end.getTime() - start.getTime());
-        let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
-        if (request.type === 'VACATION' && request.startTime && request.endTime) {
-            diffDays = 0.5;
-        }
-
-        return diffDays;
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     }
 
     calculateTotalHours(request: LeaveRequest): number {
