@@ -2,12 +2,14 @@ import type { NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { db } from './src/db';
 import { users } from './src/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 
 const loginSchema = z.object({
-    email: z.string().email(),
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
+    dateOfBirth: z.string().min(1),
     password: z.string().min(1),
 });
 
@@ -15,7 +17,9 @@ export default {
     providers: [
         Credentials({
             credentials: {
-                email: { label: 'Email', type: 'email' },
+                firstName: { label: 'Nome', type: 'text' },
+                lastName: { label: 'Cognome', type: 'text' },
+                dateOfBirth: { label: 'Data di nascita', type: 'date' },
                 password: { label: 'Password', type: 'password' },
             },
             async authorize(credentials) {
@@ -25,11 +29,15 @@ export default {
                     return null;
                 }
 
-                const { email, password } = validatedFields.data;
+                const { firstName, lastName, dateOfBirth, password } = validatedFields.data;
 
-                // Find user by email
+                // Find user by firstName + lastName + dateOfBirth
                 const user = await db.query.users.findFirst({
-                    where: eq(users.email, email),
+                    where: and(
+                        eq(users.firstName, firstName),
+                        eq(users.lastName, lastName),
+                        eq(users.dateOfBirth, dateOfBirth),
+                    ),
                 });
 
                 if (!user || !user.password) {
@@ -46,11 +54,15 @@ export default {
                 // Return user object (excluding password)
                 return {
                     id: user.id,
-                    email: user.email,
+                    email: '',   // no email in this system; NextAuth User type requires string
                     name: user.name,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
                     role: user.role,
                     vacationDaysTotal: user.vacationDaysTotal,
                     vacationDaysUsed: user.vacationDaysUsed,
+                    personalHoursTotal: user.personalHoursTotal,
+                    personalHoursUsed: user.personalHoursUsed,
                     avatarUrl: user.avatarUrl,
                 };
             },
@@ -66,7 +78,9 @@ export default {
                 token.role = user.role;
                 token.vacationDaysTotal = user.vacationDaysTotal;
                 token.vacationDaysUsed = user.vacationDaysUsed;
-                token.avatarUrl = user.avatarUrl;
+                token.personalHoursTotal = user.personalHoursTotal;
+                token.personalHoursUsed = user.personalHoursUsed;
+                // Note: avatarUrl removed to prevent JWT size issues with Base64 images
             }
             return token;
         },
@@ -76,7 +90,9 @@ export default {
                 session.user.role = token.role as 'ADMIN' | 'USER';
                 session.user.vacationDaysTotal = token.vacationDaysTotal as number;
                 session.user.vacationDaysUsed = token.vacationDaysUsed as number;
-                session.user.avatarUrl = token.avatarUrl as string | null;
+                session.user.personalHoursTotal = token.personalHoursTotal as number;
+                session.user.personalHoursUsed = token.personalHoursUsed as number;
+                // avatarUrl will be fetched from DB when needed
             }
             return session;
         },

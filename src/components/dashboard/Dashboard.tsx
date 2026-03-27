@@ -1,214 +1,560 @@
+
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { leaveService } from '@/services/leaveService';
-import { userService } from '@/services/userService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { CalendarDays, Users, Clock, CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { CalendarDays, CheckCircle2, Clock, Users, StickyNote, User as UserIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO } from 'date-fns';
+import { LeaveRequest, User } from '@/types';
+import { leaveService } from '@/services/leaveService';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
 import { it } from 'date-fns/locale';
-import { LeaveRequest } from '@/types';
+import { getHolidays, isHoliday } from '@/lib/holidays';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import Modal from '@/components/ui/Modal';
+import RequestForm from '@/components/requests/RequestForm';
+import { VacationStatsModal, TeamManagementModal } from '@/components/dashboard/StatsModals';
+import { getUserColor } from '@/lib/colors';
+
+type UserColorFn = (userId: string) => { ring: string; bg: string; text: string; hex: string };
 
 export default function Dashboard() {
     const { data: session } = useSession();
     const currentUser = session?.user;
     const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
-    const [allUsers, setAllUsers] = useState<any[]>([]);
+    const [allUsers, setAllUsers] = useState<User[]>([]);
     const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [activeModal, setActiveModal] = useState<'VACATION' | 'TEAM' | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+
+    const fetchData = async () => {
+        try {
+            const [requestsRes, usersRes] = await Promise.all([
+                fetch('/api/leave-requests'),
+                fetch('/api/users')
+            ]);
+
+            if (requestsRes.ok) {
+                const data = await requestsRes.json();
+                setLeaveRequests(data);
+            }
+
+            if (usersRes.ok) {
+                const data = await usersRes.json();
+                setAllUsers(data);
+            }
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            if (!currentUser) return;
+        if (session) {
+            fetchData();
+        }
+    }, [session]);
 
-            try {
-                const [requests, users] = await Promise.all([
-                    leaveService.getAllRequests(),
-                    userService.getAllUsers(),
-                ]);
-                setLeaveRequests(requests);
-                setAllUsers(users);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
+    if (!session?.user) return null;
 
-        fetchData();
-    }, [currentUser]);
+    // Calculate stats
+    // Use fresh user data from the database if available, to avoid stale NextAuth session caching
+    const freshUser = allUsers.find(u => u.id === currentUser?.id) || currentUser;
+    const totalDays = freshUser?.vacationDaysTotal ?? 22;
+    const usedDays = freshUser?.vacationDaysUsed ?? 0;
+    const remainingDays = totalDays - usedDays;
 
-    if (!currentUser) return null;
+    const myRequests = leaveRequests.filter(r => r.userId === currentUser?.id);
+    const totalRequestsCount = myRequests.length;
 
-    // Calculate stats from state
-    const approvedRequests = leaveRequests.filter(r => r.status === 'APPROVED');
-    const pendingRequests = leaveRequests.filter(r => r.status === 'PENDING');
-    const myRequests = leaveRequests.filter(r => r.userId === currentUser.id);
-    const myApprovedCount = myRequests.filter(r => r.status === 'APPROVED').length;
+    const getUserColorForDashboard = (userId: string) => {
+        const u = allUsers.find(u => u.id === userId);
+        return getUserColor(userId, u?.themeColor, allUsers);
+    };
 
     // Calendar logic
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
     const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-    const getDayLeaves = (date: Date) => {
-        return approvedRequests.filter(req => {
-            const start = parseISO(req.startDate);
-            const end = parseISO(req.endDate);
-            return date >= start && date <= end;
-        });
-    };
-
+    // Componenti per le statistiche - Definition for mapping if needed, 
+    // but we are using manual cards for click interaction now.
     const stats = [
         {
             title: 'Ferie Disponibili',
-            value: `${currentUser.vacationDaysTotal - currentUser.vacationDaysUsed}`,
-            subtitle: `su ${currentUser.vacationDaysTotal} giorni`,
+            value: remainingDays,
+            subtitle: `su ${totalDays} giorni`,
             icon: CalendarDays,
-            color: 'from-blue-600 to-blue-400',
+            color: 'from-[#EB0A1E] to-[#CC091A]', // Toyota Red
+            bg: 'bg-neutral-50 dark:bg-neutral-900',
+            text: 'text-[#EB0A1E]'
         },
         {
-            title: 'Richieste Approvate',
-            value: myApprovedCount.toString(),
-            subtitle: 'Mie richieste',
+            title: 'Le mie Ferie',
+            value: totalRequestsCount,
+            subtitle: 'Richieste inserite',
             icon: CheckCircle2,
-            color: 'from-green-600 to-green-400',
-        },
-        {
-            title: 'In Attesa',
-            value: pendingRequests.length.toString(),
-            subtitle: 'Richieste pending',
-            icon: Clock,
-            color: 'from-yellow-600 to-yellow-400',
+            color: 'from-green-500 to-green-600',
+            bg: 'bg-green-50 dark:bg-green-900/10',
+            text: 'text-green-600 dark:text-green-500'
         },
         {
             title: 'Team',
-            value: allUsers.length.toString(),
+            value: allUsers.length,
             subtitle: 'Membri del team',
             icon: Users,
-            color: 'from-purple-600 to-purple-400',
+            color: 'from-neutral-700 to-neutral-800', // Toyota Gray/Black
+            bg: 'bg-neutral-50 dark:bg-neutral-900/10',
+            text: 'text-neutral-700 dark:text-neutral-400'
         },
     ];
 
+    const container = {
+        hidden: { opacity: 0 },
+        show: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const item = {
+        hidden: { y: 20, opacity: 0 },
+        show: { y: 0, opacity: 1 }
+    };
+
+    const handleDayClick = (day: Date) => {
+        setSelectedDate(day);
+        setIsModalOpen(true);
+    };
+
+    const handleRequestSuccess = async (data: any) => {
+        try {
+            const res = await fetch('/api/leave-requests', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (res.ok) {
+                const newRequest = await res.json();
+                setLeaveRequests([newRequest, ...leaveRequests]);
+                setIsModalOpen(false);
+            } else {
+                alert('Errore durante la creazione della richiesta');
+            }
+        } catch (error) {
+            console.error('Error creating request:', error);
+        }
+    };
+
     return (
-        <div className="p-6 lg:p-8 space-y-8">
-            {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    Dashboard
-                </h1>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">
-                    Panoramica delle ferie del team
-                </p>
-            </div>
+        <div className="p-6 lg:p-12 max-w-7xl mx-auto space-y-12">
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center justify-between"
+            >
+                <div>
+                    <h1 className="text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-white mb-2">
+                        Dashboard
+                    </h1>
+                    <p className="text-lg text-neutral-500 dark:text-neutral-400">
+                        Bentornato, <span className="font-semibold text-neutral-800 dark:text-neutral-200">{currentUser?.name}</span> 👋
+                    </p>
+                </div>
+                <div className="hidden md:block text-sm font-medium text-neutral-500 bg-white dark:bg-neutral-900 px-6 py-3 rounded-full shadow-sm border border-neutral-100 dark:border-neutral-800">
+                    {format(new Date(), 'EEEE d MMMM yyyy', { locale: it })}
+                </div>
+            </motion.div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                {stats.map((stat) => {
-                    const Icon = stat.icon;
-                    return (
-                        <Card key={stat.title} className="overflow-hidden">
-                            <CardContent className="p-6">
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                            {stat.title}
-                                        </p>
-                                        <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">
-                                            {stat.value}
-                                        </p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            {stat.subtitle}
-                                        </p>
-                                    </div>
-                                    <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} shadow-lg`}>
-                                        <Icon className="w-6 h-6 text-white" />
-                                    </div>
+            <motion.div
+                variants={container}
+                initial="hidden"
+                animate="show"
+                className="grid gap-8 md:grid-cols-2 lg:grid-cols-4"
+            >
+                {/* 1. Vacation Stats */}
+                <motion.div variants={item} onClick={() => setActiveModal('VACATION')} className="cursor-pointer">
+                    <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-neutral-900 border-l-4 border-l-[#EB0A1E]">
+                        <CardContent className="flex items-start justify-between p-8">
+                            <div className="space-y-4">
+                                <div className={`p-3 w-fit rounded-2xl bg-[#EB0A1E] shadow-lg shadow-red-500/20 group-hover:scale-110 transition-transform duration-300`}>
+                                    <CalendarDays className="w-6 h-6 text-white" />
                                 </div>
-                            </CardContent>
-                        </Card>
-                    );
-                })}
-            </div>
+                                <div>
+                                    <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 tracking-wide uppercase">
+                                        Ferie Disponibili
+                                    </p>
+                                    <h3 className="text-4xl font-bold mt-1 text-neutral-900 dark:text-white">
+                                        {remainingDays}
+                                    </h3>
+                                    <p className="text-sm mt-1 font-medium text-[#EB0A1E]">
+                                        su {totalDays} giorni
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
 
-            {/* Calendar */}
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <CardTitle>Calendario Ferie Team</CardTitle>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-                                className="px-3 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                {/* 2. Requests Stats */}
+                <motion.div variants={item}>
+                    <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-neutral-900 border-l-4 border-l-green-500">
+                        <CardContent className="flex items-start justify-between p-8">
+                            <div className="space-y-4">
+                                <div className={`p-3 w-fit rounded-2xl bg-green-500 shadow-lg shadow-green-500/20 group-hover:scale-110 transition-transform duration-300`}>
+                                    <CheckCircle2 className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 tracking-wide uppercase">
+                                        Mie Richieste
+                                    </p>
+                                    <h3 className="text-4xl font-bold mt-1 text-neutral-900 dark:text-white">
+                                        {totalRequestsCount}
+                                    </h3>
+                                    <p className="text-sm mt-1 font-medium text-green-600 dark:text-green-500">
+                                        Ferie/Permessi inviati
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                {/* 4. Team Management */}
+                <motion.div variants={item} onClick={() => setActiveModal('TEAM')} className="cursor-pointer">
+                    <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-neutral-900 border-l-4 border-l-neutral-500">
+                        <CardContent className="flex items-start justify-between p-8">
+                            <div className="space-y-4">
+                                <div className={`p-3 w-fit rounded-2xl bg-neutral-600 shadow-lg shadow-neutral-500/20 group-hover:scale-110 transition-transform duration-300`}>
+                                    <Users className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 tracking-wide uppercase">
+                                        Team
+                                    </p>
+                                    <h3 className="text-4xl font-bold mt-1 text-neutral-900 dark:text-white">
+                                        {allUsers.length}
+                                    </h3>
+                                    <p className="text-sm mt-1 font-medium text-neutral-600 dark:text-neutral-400">
+                                        Membri del team
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+            </motion.div>
+
+            {/* Calendar Section */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+            >
+                <Card className="border-none shadow-2xl overflow-hidden bg-white dark:bg-neutral-900">
+                    <CardHeader className="flex flex-row items-center justify-between p-8 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
+                        <div>
+                            <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                                <CalendarDays className="w-6 h-6 text-[#EB0A1E]" />
+                                Calendario Team
+                            </CardTitle>
+                            <p className="text-sm text-neutral-500 mt-1">
+                                Clicca su un giorno per inserire una nuova richiesta
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-4 bg-white dark:bg-neutral-800 p-1.5 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-700">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() - 1)))}
+                                className="hover:bg-neutral-100 dark:hover:bg-neutral-700 w-8 h-8 p-0 rounded-lg"
                             >
                                 ←
-                            </button>
-                            <span className="text-sm font-medium min-w-[150px] text-center">
+                            </Button>
+                            <span className="font-semibold w-40 text-center text-neutral-700 dark:text-neutral-200">
                                 {format(currentMonth, 'MMMM yyyy', { locale: it })}
                             </span>
-                            <button
-                                onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-                                className="px-3 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() + 1)))}
+                                className="hover:bg-neutral-100 dark:hover:bg-neutral-700 w-8 h-8 p-0 rounded-lg"
                             >
                                 →
-                            </button>
+                            </Button>
                         </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-7 gap-2">
-                        {/* Day headers */}
-                        {['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'].map(day => (
-                            <div key={day} className="text-center text-sm font-semibold text-gray-500 dark:text-gray-400 p-2">
-                                {day}
-                            </div>
-                        ))}
 
-                        {/* Empty cells for offset */}
-                        {Array.from({ length: (monthStart.getDay() + 6) % 7 }).map((_, i) => (
-                            <div key={`empty-${i}`} />
-                        ))}
+                    </CardHeader>
+                    <CardContent className="p-8">
+                        {/* Per-user color legend */}
+                        <div className="flex flex-wrap items-center gap-4 mb-6 text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                            {allUsers.map((u) => {
+                                const color = getUserColorForDashboard(u.id);
+                                return (
+                                    <div key={u.id} className="flex items-center gap-1.5">
+                                        <span className={`w-2.5 h-2.5 rounded-full ${color.bg}`} />
+                                        <span className={color.text}>{u.name.split(' ')[0]}</span>
 
-                        {/* Day cells */}
-                        {daysInMonth.map(day => {
-                            const dayLeaves = getDayLeaves(day);
-                            const isToday = isSameDay(day, new Date());
-
-                            return (
-                                <div
-                                    key={day.toISOString()}
-                                    className={`min-h-[80px] p-2 rounded-lg border-2 transition-all ${isToday
-                                        ? 'border-blue-600 bg-blue-100 dark:bg-blue-900/40'
-                                        : 'border-gray-300 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm'
-                                        }`}
-                                >
-                                    <div className={`text-sm font-semibold mb-1 ${isToday ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white'}`}>
-                                        {format(day, 'd')}
                                     </div>
-                                    <div className="space-y-1">
-                                        {dayLeaves.slice(0, 2).map(leave => {
-                                            const user = allUsers.find((u: any) => u.id === leave.userId);
-                                            if (!user) return null;
-                                            return (
-                                                <div
-                                                    key={leave.id}
-                                                    className="text-xs font-medium px-2 py-1 shadow-sm rounded-md bg-gradient-to-r from-blue-600 to-blue-500 text-white truncate"
-                                                    title={user.name}
-                                                >
-                                                    {user.name.split(' ')[0]}
-                                                </div>
-                                            );
-                                        })}
-                                        {dayLeaves.length > 2 && (
-                                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                +{dayLeaves.length - 2}
-                                            </div>
-                                        )}
-                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="grid grid-cols-7 gap-4 mb-6">
+                            {['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'].map((day) => (
+                                <div key={day} className="text-center font-semibold text-xs text-neutral-400 uppercase tracking-widest">
+                                    {day}
                                 </div>
-                            );
-                        })}
+                            ))}
+                        </div>
+                        <div className="grid grid-cols-7 gap-4">
+                            {daysInMonth.map((day, dayIdx) => {
+                                const dayLeaves = leaveRequests.filter(req =>
+                                    isSameDay(new Date(req.startDate), day) ||
+                                    (new Date(req.startDate) <= day && new Date(req.endDate) >= day)
+                                );
+
+                                // Add empty placeholders for start of month
+                                if (dayIdx === 0) {
+                                    const startDay = day.getDay() || 7; // Convert Sunday (0) to 7
+                                    const placeholders = Array(startDay - 1).fill(null);
+
+                                    return (
+                                        <>
+                                            {placeholders.map((_, i) => (
+                                                <div key={`empty-${i}`} className="min-h-[120px] bg-neutral-50/50 dark:bg-neutral-900/30 rounded-2xl" />
+                                            ))}
+                                            <DayCell
+                                                key={day.toString()}
+                                                day={day}
+                                                leaves={dayLeaves}
+                                                allUsers={allUsers}
+                                                getUserColor={getUserColorForDashboard}
+                                                onClick={() => handleDayClick(day)}
+                                            />
+                                        </>
+                                    );
+                                }
+
+                                return (
+                                    <DayCell
+                                        key={day.toString()}
+                                        day={day}
+                                        leaves={dayLeaves}
+                                        allUsers={allUsers}
+                                        getUserColor={getUserColorForDashboard}
+                                        onClick={() => handleDayClick(day)}
+                                    />
+                                );
+                            })}
+                        </div>
+                    </CardContent>
+                </Card>
+            </motion.div>
+
+            {/* Stats Modals */}
+            <VacationStatsModal
+                isOpen={activeModal === 'VACATION'}
+                onClose={() => setActiveModal(null)}
+                total={totalDays}
+                used={usedDays}
+                onUpdate={fetchData}
+            />
+
+
+
+            <TeamManagementModal
+                isOpen={activeModal === 'TEAM'}
+                onClose={() => setActiveModal(null)}
+                users={allUsers}
+                currentUserRole={currentUser?.role}
+            />
+
+            {/* Request Modal */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={selectedDate ? format(selectedDate, 'dd MMMM yyyy', { locale: it }) : "Nuova Richiesta"}
+            >
+                {selectedDate && (() => {
+                    const dayLeaves = leaveRequests.filter(req =>
+                        isSameDay(new Date(req.startDate), selectedDate) ||
+                        (new Date(req.startDate) <= selectedDate && new Date(req.endDate) >= selectedDate)
+                    );
+
+                    if (dayLeaves.length > 0) {
+                        return (
+                            <div className="mb-6 space-y-3">
+                                <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+                                    <Users className="w-4 h-4 text-neutral-500" />
+                                    Assenze previste in questa data:
+                                </h3>
+                                <div className="space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                                    {dayLeaves.map(leave => {
+                                        const user = allUsers.find(u => u.id === leave.userId);
+                                        if (!user) return null;
+
+                                        const color = getUserColorForDashboard(user.id);
+                                        const isHalfDay = leave.type === 'VACATION' && leave.startTime && leave.endTime;
+
+                                        return (
+                                            <div key={leave.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-8 h-8 rounded-full overflow-hidden shrink-0 ring-2 ${color.ring}`}>
+                                                        <Image
+                                                            src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
+                                                            alt={user.name}
+                                                            width={32}
+                                                            height={32}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-neutral-900 dark:text-white">
+                                                            {user.name}
+                                                        </p>
+                                                        <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                                                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300">
+                                                                {leave.type === 'VACATION' ? 'Ferie' : leave.type === 'SICK' ? 'Malattia' : 'Permesso'}
+                                                            </span>
+                                                            {isHalfDay && (
+                                                                <span className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full font-medium">
+                                                                    Mezza Giornata ({leave.startTime === '09:00' ? 'Mattina' : 'Pomeriggio'})
+                                                                </span>
+                                                            )}
+                                                            {leave.type === 'PERSONAL' && leave.startTime && leave.endTime && (
+                                                                <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full font-medium">
+                                                                    {leaveService.calculateTotalHours(leave)} {leaveService.calculateTotalHours(leave) === 1 ? 'ora' : 'ore'} ({leave.startTime} - {leave.endTime})
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {leave.handoverNotes && (
+                                                    <div className="text-xs text-neutral-500 dark:text-neutral-400 italic bg-white dark:bg-neutral-900 px-3 py-1.5 rounded-lg border border-neutral-100 dark:border-neutral-800 self-start sm:self-auto max-w-full sm:max-w-[200px] truncate" title={leave.handoverNotes}>
+                                                        "{leave.handoverNotes}"
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <div className="h-px w-full bg-neutral-200 dark:bg-neutral-800 my-4" />
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
+
+                <div className={selectedDate ? "" : "mt-2"}>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
+                            Inserisci Nuova Richiesta
+                        </h3>
+                        {selectedDate && (
+                            <a
+                                href={`https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&subject=Assenza%20Pianificata&startdt=${format(selectedDate, "yyyy-MM-dd'T'09:00:00")}&enddt=${format(selectedDate, "yyyy-MM-dd'T'18:00:00")}&body=Assenza%20aggiunta%20da%20VacaPlanner`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-2 bg-[#0078D4]/10 text-[#0078D4] hover:bg-[#0078D4]/20 hover:text-[#0078D4] dark:bg-[#0078D4]/20 dark:hover:bg-[#0078D4]/30 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors"
+                                title="Apri in Outlook Calendar"
+                            >
+                                <CalendarDays className="w-4 h-4" />
+                                Pianifica in Outlook
+                            </a>
+                        )}
                     </div>
-                </CardContent>
-            </Card>
+                    <RequestForm
+                        initialDate={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined}
+                        onSuccess={handleRequestSuccess}
+                        onCancel={() => setIsModalOpen(false)}
+                    />
+                </div>
+            </Modal>
+        </div>
+    );
+}
+
+function DayCell({ day, leaves, allUsers, getUserColor, onClick }: {
+    day: Date;
+    leaves: LeaveRequest[];
+    allUsers: User[];
+    getUserColor: UserColorFn;
+    onClick: () => void;
+}) {
+    const isToday = isSameDay(day, new Date());
+    const holidays = getHolidays(day.getFullYear());
+    const holiday = isHoliday(day, holidays);
+
+    return (
+        <div
+            onClick={onClick}
+            className={`min-h-[120px] p-4 border-2 rounded-3xl transition-all duration-200 cursor-pointer group relative overflow-hidden ${isToday
+                ? 'bg-red-50/80 border-red-300 dark:bg-red-900/30 dark:border-red-700 ring-2 ring-[#EB0A1E] ring-offset-2 dark:ring-offset-neutral-900'
+                : holiday
+                    ? 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 ring-1 ring-red-300/50 dark:ring-red-700/50'
+                    : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 hover:border-red-400 dark:hover:border-red-600 hover:shadow-xl hover:-translate-y-1'
+                }`}>
+            <div className="flex justify-between items-start mb-3">
+                <div className={`text-sm font-semibold ${isToday ? 'text-[#EB0A1E]' : holiday ? 'text-red-500' : 'text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300'}`}>
+                    {format(day, 'd')}
+                </div>
+                {holiday && (
+                    <span className="text-[10px] font-medium text-red-500 bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded-full truncate max-w-[80px]" title={holiday.localName}>
+                        {holiday.localName}
+                    </span>
+                )}
+            </div>
+
+            <div className="space-y-1">
+                {leaves.slice(0, 3).map((leave, i) => {
+                    const user = allUsers.find((u) => u.id === leave.userId);
+                    if (!user) return null;
+
+                    const color = getUserColor(leave.userId);
+                    const hasNotes = leave.handoverNotes && leave.handoverNotes.trim().length > 0;
+
+                    return (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: i * 0.05 }}
+                            key={leave.id}
+                            className="flex items-center gap-2 p-1.5 rounded-full bg-white/80 dark:bg-neutral-800/80 border border-neutral-100 dark:border-neutral-700 shadow-sm relative"
+                            title={`${user.name} - ${leave.type === 'VACATION' ? 'Ferie' : leave.type === 'SICK' ? 'Malattia' : 'Permesso'}${leave.type === 'PERSONAL' && leave.startTime && leave.endTime ? ` (${leave.startTime} - ${leave.endTime})` : ''}${hasNotes ? `\nNote: ${leave.handoverNotes}` : ''}`}
+                        >
+                            <div className={`w-5 h-5 rounded-full overflow-hidden bg-neutral-100 ring-2 ${color.ring} shrink-0`}>
+                                <Image
+                                    src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
+                                    alt={user.name}
+                                    width={20}
+                                    height={20}
+                                />
+                            </div>
+                            <span className={`truncate text-xs font-semibold max-w-[100px] ${color.text}`}>
+                                {user.name.split(' ')[0]}{leave.type === 'PERSONAL' && leave.startTime && leave.endTime ? ` (${leaveService.calculateTotalHours(leave)}h)` : ''}
+                            </span>
+                            {hasNotes && (
+                                <div className="absolute -top-1 -right-1 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 p-0.5 rounded-full ring-1 ring-white dark:ring-neutral-900" title="Note presenti">
+                                    <StickyNote className="w-2.5 h-2.5" />
+                                </div>
+                            )}
+                        </motion.div>
+                    );
+                })}
+                {leaves.length > 3 && (
+                    <div className="text-[10px] text-center font-medium text-neutral-400 bg-neutral-50 dark:bg-neutral-800 rounded-full py-1">
+                        +{leaves.length - 3} altri
+                    </div>
+                )}
+            </div>
+
+            {/* Hover visual cue */}
+            <div className="absolute inset-0 bg-[#EB0A1E]/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
         </div>
     );
 }

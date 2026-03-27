@@ -2,14 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { db } from '@/db';
 import { leaveRequests, users } from '@/db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 const createLeaveRequestSchema = z.object({
     startDate: z.string(),
     endDate: z.string(),
+    startTime: z.string().optional(),
+    endTime: z.string().optional(),
     type: z.enum(['VACATION', 'SICK', 'PERSONAL']),
     reason: z.string().optional(),
+    handoverNotes: z.string().optional(),
 });
 
 // GET - Fetch leave requests
@@ -25,16 +28,19 @@ export async function GET(req: NextRequest) {
         const userId = searchParams.get('userId');
         const status = searchParams.get('status');
 
-        let query = db.query.leaveRequests.findMany({
+        const query = db.query.leaveRequests.findMany({
             with: {
                 user: {
                     columns: {
                         id: true,
                         name: true,
-                        email: true,
+                        firstName: true,
+                        lastName: true,
                         avatarUrl: true,
                         vacationDaysTotal: true,
                         vacationDaysUsed: true,
+                        personalHoursTotal: true,
+                        personalHoursUsed: true,
                     },
                 },
                 reviewer: {
@@ -88,17 +94,53 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const { startDate, endDate, type, reason } = validatedFields.data;
+        const { startDate, endDate, startTime, endTime, type, reason } = validatedFields.data;
 
-        // Create leave request
+        // Create leave request — auto-approved, no manual approval needed
         const [newRequest] = await db.insert(leaveRequests).values({
             userId: session.user.id,
             startDate,
             endDate,
+            startTime,
+            endTime,
             type,
             reason,
-            status: 'PENDING',
+            handoverNotes: validatedFields.data.handoverNotes,
+            status: 'APPROVED',
+            reviewedBy: session.user.id,
         }).returning();
+
+        // Immediately update user balance
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (type === 'VACATION') {
+            let days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+            // If it's a half-day vacation (both startTime and endTime are provided)
+            if (startTime && endTime) {
+                days = 0.5;
+            }
+
+            await db
+                .update(users)
+                .set({ vacationDaysUsed: sql`${users.vacationDaysUsed} + ${days}`, updatedAt: new Date() })
+                .where(eq(users.id, session.user.id));
+        } else {
+            let hours = 0;
+            if (startTime && endTime) {
+                const [sh, sm] = startTime.split(':').map(Number);
+                const [eh, em] = endTime.split(':').map(Number);
+                hours = Math.max(0, (eh * 60 + em - (sh * 60 + sm)) / 60);
+            } else {
+                const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                hours = days * 8;
+            }
+            await db
+                .update(users)
+                .set({ personalHoursUsed: sql`${users.personalHoursUsed} + ${Math.round(hours)}`, updatedAt: new Date() })
+                .where(eq(users.id, session.user.id));
+        }
 
         // Fetch complete request with user data
         const completeRequest = await db.query.leaveRequests.findFirst({
@@ -108,7 +150,8 @@ export async function POST(req: NextRequest) {
                     columns: {
                         id: true,
                         name: true,
-                        email: true,
+                        firstName: true,
+                        lastName: true,
                         avatarUrl: true,
                     },
                 },

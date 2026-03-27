@@ -1,23 +1,29 @@
+
 import { DefaultSession } from 'next-auth';
 
 declare module 'next-auth' {
     interface Session {
         user: {
             id: string;
-            role: 'ADMIN' | 'USER';
+            role: 'ADMIN' | 'USER' | 'MANAGER';
             vacationDaysTotal: number;
             vacationDaysUsed: number;
-            avatarUrl: string | null;
+            // avatarUrl removed - fetch from DB when needed to avoid JWT size issues
         } & DefaultSession['user'];
     }
 
     interface User {
         id: string;
-        email: string;
+        email: string;   // kept as required by NextAuth base type; always '' in this system
         name: string;
-        role: 'ADMIN' | 'USER';
+        firstName: string;
+        lastName: string;
+        role: 'ADMIN' | 'USER' | 'MANAGER';
+        vacationDaysTotal: number;
         vacationDaysTotal: number;
         vacationDaysUsed: number;
+        personalHoursTotal: number;
+        personalHoursUsed: number;
         avatarUrl: string | null;
     }
 }
@@ -25,9 +31,9 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
     interface JWT {
         id: string;
-        role: 'ADMIN' | 'USER';
+        role: 'ADMIN' | 'USER' | 'MANAGER';
         vacationDaysTotal: number;
         vacationDaysUsed: number;
-        avatarUrl: string | null;
+        // avatarUrl removed - fetch from DB when needed to avoid JWT size issues
     }
 }

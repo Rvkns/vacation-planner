@@ -1,6 +1,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
@@ -8,7 +9,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         <div
             ref={ref}
             className={cn(
-                "rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-lg hover:shadow-xl transition-shadow",
+                "rounded-xl border border-white/20 dark:border-white/10 glass-card shadow-lg transition-all",
                 className
             )}
             {...props}
@@ -55,7 +56,7 @@ CardDescription.displayName = "CardDescription"
 
 const CardContent = React.forwardRef<HTMLDivElement, CardProps>(
     ({ className, ...props }, ref) => (
-        <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+        <div ref={ref} className={cn("p-6", className)} {...props} />
     )
 )
 CardContent.displayName = "CardContent"

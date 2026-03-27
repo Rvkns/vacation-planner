@@ -50,6 +50,8 @@ export default function MyRequests() {
             const newRequest: CreateLeaveRequest = {
                 startDate: formData.startDate,
                 endDate: formData.endDate,
+                startTime: formData.type !== 'VACATION' ? formData.startTime : undefined,
+                endTime: formData.type !== 'VACATION' ? formData.endTime : undefined,
                 type: formData.type,
                 reason: formData.reason || undefined,
             };
@@ -76,16 +78,6 @@ export default function MyRequests() {
             console.error('Error deleting request:', error);
             alert('Errore durante l\'eliminazione della richiesta');
         }
-    };
-
-    const getStatusBadge = (status: string) => {
-        const variants: Record<string, { variant: 'default' | 'success' | 'warning' | 'danger'; label: string }> = {
-            PENDING: { variant: 'warning', label: 'In Attesa' },
-            APPROVED: { variant: 'success', label: 'Approvata' },
-            REJECTED: { variant: 'danger', label: 'Rifiutata' },
-        };
-        const config = variants[status] || variants.PENDING;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
     };
 
     const getTypeLabel = (type: string) => {
@@ -156,13 +148,38 @@ export default function MyRequests() {
                                 </label>
                                 <Select
                                     value={formData.type}
-                                    onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                                    onChange={(e) => setFormData({ ...formData, type: e.target.value as LeaveType })}
                                 >
                                     <option value="VACATION">Ferie</option>
                                     <option value="SICK">Malattia</option>
                                     <option value="PERSONAL">Permesso</option>
                                 </Select>
                             </div>
+
+                            {formData.type !== 'VACATION' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Ora Inizio
+                                        </label>
+                                        <Input
+                                            type="time"
+                                            value={formData.startTime || ''}
+                                            onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Ora Fine
+                                        </label>
+                                        <Input
+                                            type="time"
+                                            value={formData.endTime || ''}
+                                            onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -197,13 +214,13 @@ export default function MyRequests() {
                                 Nessuna richiesta ancora
                             </p>
                             <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                                Clicca su "Nuova Richiesta" per iniziare
+                                Clicca su &quot;Nuova Richiesta&quot; per iniziare
                             </p>
                         </CardContent>
                     </Card>
                 ) : (
                     requests.map((request) => {
-                        const days = leaveService.calculateDays(request.startDate, request.endDate);
+                        const days = leaveService.calculateDays(request);
 
                         return (
                             <Card key={request.id} className="hover:shadow-xl transition-all">
@@ -214,7 +231,6 @@ export default function MyRequests() {
                                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                                     {getTypeLabel(request.type)}
                                                 </h3>
-                                                {getStatusBadge(request.status)}
                                             </div>
 
                                             <div className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
@@ -227,7 +243,12 @@ export default function MyRequests() {
                                                     {format(new Date(request.endDate), 'dd MMMM yyyy', { locale: it })}
                                                 </p>
                                                 <p>
-                                                    <span className="font-medium">Durata:</span> {days} {days === 1 ? 'giorno' : 'giorni'}
+                                                    <span className="font-medium">Durata:</span> {days} {days === 1 || days === 0.5 ? 'giorno' : 'giorni'}
+                                                    {request.type === 'VACATION' && request.startTime && request.endTime && (
+                                                        <span className="ml-2 text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 px-2 py-0.5 rounded-full">
+                                                            {request.startTime === '09:00' ? 'Mattina' : 'Pomeriggio'}
+                                                        </span>
+                                                    )}
                                                 </p>
                                                 {request.reason && (
                                                     <p>
@@ -240,16 +261,14 @@ export default function MyRequests() {
                                             </div>
                                         </div>
 
-                                        {request.status === 'PENDING' && (
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => handleDelete(request.id)}
-                                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                            >
-                                                <Trash2 className="w-5 h-5" />
-                                            </Button>
-                                        )}
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => handleDelete(request.id)}
+                                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                        >
+                                            <Trash2 className="w-5 h-5" />
+                                        </Button>
                                     </div>
                                 </CardContent>
                             </Card>

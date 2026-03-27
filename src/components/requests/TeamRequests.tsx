@@ -1,34 +1,42 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { leaveService } from '@/services/leaveService';
-import { userService } from '@/services/userService';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Check, X, Users as UsersIcon } from 'lucide-react';
+import { leaveService } from '@/services/leaveService';
+import { Users as UsersIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
-import { LeaveRequest } from '@/types';
+import { LeaveRequest, User } from '@/types';
+import Image from 'next/image';
 
 export default function TeamRequests() {
     const { data: session } = useSession();
     const currentUser = session?.user;
-    const [pendingRequests, setPendingRequests] = useState<LeaveRequest[]>([]);
-    const [allUsers, setAllUsers] = useState<any[]>([]);
+    const [allRequests, setAllRequests] = useState<LeaveRequest[]>([]);
+    const [allUsers, setAllUsers] = useState<User[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!currentUser || currentUser.role !== 'ADMIN') return;
+            if (!currentUser) return;
 
             try {
-                const [requests, users] = await Promise.all([
-                    leaveService.getPendingRequests(),
-                    userService.getAllUsers(),
+                const [requestsRes, usersRes] = await Promise.all([
+                    fetch('/api/leave-requests'),
+                    fetch('/api/users'),
                 ]);
-                setPendingRequests(requests.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-                setAllUsers(users);
+
+                if (requestsRes.ok) {
+                    const data = await requestsRes.json();
+                    setAllRequests(data.sort((a: LeaveRequest, b: LeaveRequest) =>
+                        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                    ));
+                }
+
+                if (usersRes.ok) {
+                    setAllUsers(await usersRes.json());
+                }
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -36,30 +44,6 @@ export default function TeamRequests() {
 
         fetchData();
     }, [currentUser]);
-
-    const handleApprove = async (requestId: string) => {
-        if (!currentUser) return;
-        try {
-            await leaveService.updateRequestStatus(requestId, 'APPROVED');
-            setPendingRequests(pendingRequests.filter(r => r.id !== requestId));
-        } catch (error) {
-            console.error('Error approving request:', error);
-            alert('Errore durante l\'approvazione della richiesta');
-        }
-    };
-
-    const handleReject = async (requestId: string) => {
-        if (!currentUser) return;
-        if (confirm('Sei sicuro di voler rifiutare questa richiesta?')) {
-            try {
-                await leaveService.updateRequestStatus(requestId, 'REJECTED');
-                setPendingRequests(pendingRequests.filter(r => r.id !== requestId));
-            } catch (error) {
-                console.error('Error rejecting request:', error);
-                alert('Errore durante il rifiuto della richiesta');
-            }
-        }
-    };
 
     const getTypeLabel = (type: string) => {
         const labels: Record<string, string> = {
@@ -70,22 +54,8 @@ export default function TeamRequests() {
         return labels[type] || type;
     };
 
-    if (!currentUser || currentUser.role !== 'ADMIN') {
-        return (
-            <div className="p-6 lg:p-8">
-                <Card>
-                    <CardContent className="p-12 text-center">
-                        <X className="w-16 h-16 mx-auto text-red-500 mb-4" />
-                        <p className="text-lg font-medium text-gray-900 dark:text-white">
-                            Accesso Negato
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            Solo i manager possono accedere a questa sezione
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
-        );
+    if (!currentUser) {
+        return null;
     }
 
     return (
@@ -96,103 +66,87 @@ export default function TeamRequests() {
                     Richieste Team
                 </h1>
                 <p className="text-gray-500 dark:text-gray-400 mt-1">
-                    Gestisci le richieste di ferie del team
+                    Panoramica delle ferie e permessi del team
                 </p>
             </div>
 
             {/* Requests List */}
             <div className="space-y-4">
-                {pendingRequests.length === 0 ? (
+                {allRequests.length === 0 ? (
                     <Card>
                         <CardContent className="p-12 text-center">
                             <UsersIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-700 mb-4" />
                             <p className="text-lg font-medium text-gray-500 dark:text-gray-400">
-                                Nessuna richiesta in attesa
+                                Nessuna richiesta
                             </p>
                             <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                                Tutte le richieste sono state processate
+                                Il team non ha ancora inserito richieste
                             </p>
                         </CardContent>
                     </Card>
                 ) : (
-                    pendingRequests.map((request) => {
-                        const user = allUsers.find((u: any) => u.id === request.userId);
-                        const days = leaveService.calculateDays(request.startDate, request.endDate);
-
+                    allRequests.map((request) => {
+                        const user = allUsers.find((u) => u.id === request.userId);
                         if (!user) return null;
+
+                        const dayCount = leaveService.calculateDays(request);
+                        const isPersonalHourly = request.type === 'PERSONAL' && request.startTime && request.endTime;
+                        const hoursCount = isPersonalHourly ? leaveService.calculateTotalHours(request) : 0;
 
                         return (
                             <Card key={request.id} className="hover:shadow-xl transition-all">
                                 <CardContent className="p-6">
-                                    <div className="flex items-start justify-between gap-6">
-                                        <div className="flex items-start gap-4 flex-1">
-                                            {/* User Avatar */}
-                                            <img
-                                                src={user.avatarUrl || user.avatar || '/default-avatar.png'}
-                                                alt={user.name}
-                                                className="w-12 h-12 rounded-full ring-2 ring-gray-200 dark:ring-gray-700"
-                                            />
+                                    <div className="flex items-start gap-4">
+                                        {/* User Avatar */}
+                                        <Image
+                                            src={user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
+                                            alt={user.name}
+                                            width={48}
+                                            height={48}
+                                            className="rounded-full ring-2 ring-gray-200 dark:ring-gray-700 shrink-0"
+                                        />
 
-                                            {/* Request Details */}
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                        {user.name}
-                                                    </h3>
-                                                    <Badge variant="warning">In Attesa</Badge>
-                                                </div>
-
-                                                <div className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
-                                                    <p>
-                                                        <span className="font-medium">Tipo:</span> {getTypeLabel(request.type)}
-                                                    </p>
-                                                    <p>
-                                                        <span className="font-medium">Dal:</span>{' '}
-                                                        {format(new Date(request.startDate), 'dd MMMM yyyy', { locale: it })}
-                                                    </p>
-                                                    <p>
-                                                        <span className="font-medium">Al:</span>{' '}
-                                                        {format(new Date(request.endDate), 'dd MMMM yyyy', { locale: it })}
-                                                    </p>
-                                                    <p>
-                                                        <span className="font-medium">Durata:</span> {days} {days === 1 ? 'giorno' : 'giorni'}
-                                                    </p>
-                                                    {request.reason && (
-                                                        <p>
-                                                            <span className="font-medium">Motivazione:</span> {request.reason}
-                                                        </p>
-                                                    )}
-                                                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                                                        Richiesta inviata il{' '}
-                                                        {format(new Date(request.createdAt), 'dd/MM/yyyy HH:mm', { locale: it })}
-                                                    </p>
-                                                    <p className="text-xs text-gray-400 dark:text-gray-500">
-                                                        Giorni disponibili: {user.vacationDaysTotal - user.vacationDaysUsed} su {user.vacationDaysTotal}
-                                                    </p>
-                                                </div>
+                                        {/* Request Details */}
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                    {user.name}
+                                                </h3>
+                                                <Badge variant="default">{getTypeLabel(request.type)}</Badge>
                                             </div>
-                                        </div>
 
-                                        {/* Action Buttons */}
-                                        <div className="flex flex-col gap-2">
-                                            <Button
-                                                variant="default"
-                                                size="sm"
-                                                onClick={() => handleApprove(request.id)}
-                                                className="whitespace-nowrap"
-                                            >
-                                                <Check className="w-4 h-4 mr-1" />
-                                                Approva
-                                            </Button>
-                                            <Button
-                                                variant="destructive"
-                                                size="sm"
-                                                onClick={() => handleReject(request.id)}
-                                                className="whitespace-nowrap"
-                                            >
-                                                <X className="w-4 h-4 mr-1" />
-                                                Rifiuta
-                                            </Button>
+                                            <div className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                                                <p>
+                                                    <span className="font-medium">Dal:</span>{' '}
+                                                    {format(new Date(request.startDate), 'dd MMMM yyyy', { locale: it })}
+                                                </p>
+                                                <p>
+                                                    <span className="font-medium">Al:</span>{' '}
+                                                    {format(new Date(request.endDate), 'dd MMMM yyyy', { locale: it })}
+                                                </p>
+                                                <p>
+                                                    <span className="font-medium">Durata:</span>{' '}
+                                                    {isPersonalHourly ? (
+                                                        <>{hoursCount} {hoursCount === 1 ? 'ora' : 'ore'} <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full ml-1">({request.startTime} - {request.endTime})</span></>
+                                                    ) : (
+                                                        <>{dayCount} {dayCount === 1 || dayCount === 0.5 ? 'giorno' : 'giorni'}</>
+                                                    )}
+                                                    {request.type === 'VACATION' && request.startTime && request.endTime && (
+                                                        <span className="ml-2 text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 px-2 py-0.5 rounded-full">
+                                                            {request.startTime === '09:00' ? 'Mattina' : 'Pomeriggio'}
+                                                        </span>
+                                                    )}
+                                                </p>
+                                                {request.reason && (
+                                                    <p>
+                                                        <span className="font-medium">Motivazione:</span> {request.reason}
+                                                    </p>
+                                                )}
+                                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                                                    Inserita il{' '}
+                                                    {format(new Date(request.createdAt), 'dd/MM/yyyy HH:mm', { locale: it })}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </CardContent>

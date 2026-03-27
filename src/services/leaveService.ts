@@ -14,12 +14,6 @@ class LeaveService {
         return response.json();
     }
 
-    async getPendingRequests(): Promise<LeaveRequest[]> {
-        const response = await fetch('/api/leave-requests?status=PENDING');
-        if (!response.ok) throw new Error('Failed to fetch pending requests');
-        return response.json();
-    }
-
     async getApprovedRequests(): Promise<LeaveRequest[]> {
         const response = await fetch('/api/leave-requests?status=APPROVED');
         if (!response.ok) throw new Error('Failed to fetch approved requests');
@@ -36,15 +30,6 @@ class LeaveService {
         return response.json();
     }
 
-    async updateRequestStatus(requestId: string, status: LeaveStatus): Promise<LeaveRequest> {
-        const response = await fetch(`/api/leave-requests/${requestId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status }),
-        });
-        if (!response.ok) throw new Error('Failed to update leave request');
-        return response.json();
-    }
 
     async deleteRequest(requestId: string): Promise<boolean> {
         const response = await fetch(`/api/leave-requests/${requestId}`, {
@@ -53,16 +38,31 @@ class LeaveService {
         return response.ok;
     }
 
-    calculateDays(startDate: string, endDate: string): number {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
+    calculateDays(request: LeaveRequest): number {
+        // If start/end times are provided, calculate the actual fractional day
+        // regardless of leave type (VACATION, PERSONAL, SICK, etc.)
+        if (request.startTime && request.endTime) {
+            const hours = this.calculateTotalHours(request);
+            // Normalize against an 8-hour workday; e.g. 3h → 0.375, 4h → 0.5
+            return hours > 0 ? hours / 8 : 0;
+        }
+
+        const start = new Date(request.startDate);
+        const end = new Date(request.endDate);
         const diffTime = Math.abs(end.getTime() - start.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        return diffDays;
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    }
+
+    calculateTotalHours(request: LeaveRequest): number {
+        if (!request.startTime || !request.endTime) return 0;
+        const [startH, startM] = request.startTime.split(':').map(Number);
+        const [endH, endM] = request.endTime.split(':').map(Number);
+        const diffHours = (endH + endM / 60) - (startH + startM / 60);
+        return diffHours > 0 ? diffHours : 0;
     }
 
     async getRequestsInDateRange(startDate: string, endDate: string): Promise<LeaveRequest[]> {
-        const requests = await this.getApprovedRequests();
+        const requests = await this.getAllRequests();
         const start = new Date(startDate);
         const end = new Date(endDate);
 

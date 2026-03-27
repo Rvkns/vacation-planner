@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { db } from '@/db';
-import { users } from '@/db/schema';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         const session = await auth();
 
@@ -15,7 +14,8 @@ export async function GET(req: NextRequest) {
         const allUsers = await db.query.users.findMany({
             columns: {
                 id: true,
-                email: true,
+                firstName: true,
+                lastName: true,
                 name: true,
                 role: true,
                 vacationDaysTotal: true,

@@ -8,7 +8,7 @@ class UserService {
 
     async getUserById(id: string) {
         const users = await this.getAllUsers();
-        return users.find((u: any) => u.id === id);
+        return users.find((u: { id: string }) => u.id === id);
     }
 }
 

@@ -11,7 +11,9 @@ import { CalendarDays } from 'lucide-react';
 
 export default function LoginForm() {
     const router = useRouter();
-    const [email, setEmail] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [dateOfBirth, setDateOfBirth] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -23,18 +25,20 @@ export default function LoginForm() {
 
         try {
             const result = await signIn('credentials', {
-                email,
+                firstName,
+                lastName,
+                dateOfBirth,
                 password,
                 redirect: false,
             });
 
             if (result?.error) {
-                setError('Email o password non validi');
+                setError('Dati non validi o password errata');
             } else {
                 router.push('/');
                 router.refresh();
             }
-        } catch (err) {
+        } catch {
             setError('Errore durante il login');
         } finally {
             setIsLoading(false);
@@ -42,13 +46,13 @@ export default function LoginForm() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-black dark:to-gray-900 p-4">
-            <Card className="w-full max-w-md">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-50 via-white to-red-50 dark:from-neutral-950 dark:via-black dark:to-neutral-900 p-4">
+            <Card className="w-full max-w-md border-t-4 border-t-[#EB0A1E] shadow-xl">
                 <CardHeader className="text-center">
-                    <div className="mx-auto w-16 h-16 rounded-xl bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center shadow-lg mb-4">
+                    <div className="mx-auto w-16 h-16 rounded-xl bg-[#EB0A1E] flex items-center justify-center shadow-lg shadow-red-500/20 mb-4">
                         <CalendarDays className="w-8 h-8 text-white" />
                     </div>
-                    <CardTitle className="text-2xl">Benvenuto in VacaPlanner</CardTitle>
+                    <CardTitle className="text-2xl font-bold">Benvenuto in VacaPlanner</CardTitle>
                     <CardDescription>Accedi al tuo account</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -59,22 +63,50 @@ export default function LoginForm() {
                             </div>
                         )}
 
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                    Nome
+                                </label>
+                                <Input
+                                    type="text"
+                                    value={firstName}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                    placeholder="Mario"
+                                    required
+                                    disabled={isLoading}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                    Cognome
+                                </label>
+                                <Input
+                                    type="text"
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                    placeholder="Rossi"
+                                    required
+                                    disabled={isLoading}
+                                />
+                            </div>
+                        </div>
+
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Email
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                Data di nascita
                             </label>
                             <Input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="nome@example.com"
+                                type="date"
+                                value={dateOfBirth}
+                                onChange={(e) => setDateOfBirth(e.target.value)}
                                 required
                                 disabled={isLoading}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                                 Password
                             </label>
                             <Input
@@ -87,13 +119,13 @@ export default function LoginForm() {
                             />
                         </div>
 
-                        <Button type="submit" className="w-full" disabled={isLoading}>
+                        <Button type="submit" className="w-full bg-[#EB0A1E] hover:bg-[#CC091A] text-white" disabled={isLoading}>
                             {isLoading ? 'Accesso in corso...' : 'Accedi'}
                         </Button>
 
-                        <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
+                        <p className="text-center text-sm text-neutral-600 dark:text-neutral-400 mt-4">
                             Non hai un account?{' '}
-                            <Link href="/register" className="text-blue-600 hover:underline font-medium">
+                            <Link href="/register" className="text-[#EB0A1E] hover:underline font-medium">
                                 Registrati
                             </Link>
                         </p>
