@@ -176,11 +176,11 @@ export default function Dashboard() {
                                 <div
                                     key={day.toISOString()}
                                     className={`min-h-[80px] p-2 rounded-lg border-2 transition-all ${isToday
-                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                        : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
+                                        ? 'border-blue-600 bg-blue-100 dark:bg-blue-900/40'
+                                        : 'border-gray-300 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm'
                                         }`}
                                 >
-                                    <div className={`text-sm font-semibold mb-1 ${isToday ? 'text-blue-600' : 'text-gray-900 dark:text-white'}`}>
+                                    <div className={`text-sm font-semibold mb-1 ${isToday ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white'}`}>
                                         {format(day, 'd')}
                                     </div>
                                     <div className="space-y-1">
@@ -190,7 +190,7 @@ export default function Dashboard() {
                                             return (
                                                 <div
                                                     key={leave.id}
-                                                    className="text-xs px-1.5 py-0.5 rounded bg-gradient-to-r from-blue-500 to-blue-400 text-white truncate"
+                                                    className="text-xs font-medium px-2 py-1 shadow-sm rounded-md bg-gradient-to-r from-blue-600 to-blue-500 text-white truncate"
                                                     title={user.name}
                                                 >
                                                     {user.name.split(' ')[0]}
