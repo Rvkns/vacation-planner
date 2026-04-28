@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession, signOut } from 'next-auth/react';
-import { CalendarDays, FileText, Users, LogOut, Menu, X, User as UserIcon, BarChart3 } from 'lucide-react';
+import { CalendarDays, FileText, Users, LogOut, Menu, X, User as UserIcon, BarChart3, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -16,6 +16,7 @@ const navigation = [
     { name: 'Richieste team', href: '/team-requests', icon: Users },
     { name: 'Analytics & Riepilogo', href: '/analytics', icon: BarChart3 },
     { name: 'Profilo', href: '/profile', icon: UserIcon },
+    { name: 'Gestione Utenti', href: '/admin/users', icon: Settings, adminOnly: true },
 ];
 
 export default function Sidebar() {
@@ -112,6 +113,8 @@ export default function Sidebar() {
                 {/* Navigation Links */}
                 <nav className="flex-1 px-4 space-y-1 overflow-y-auto py-2">
                     {navigation.map((item) => {
+                        if (item.adminOnly && currentUser.role !== 'ADMIN') return null;
+                        
                         const isActive = pathname === item.href;
                         const Icon = item.icon;
 
