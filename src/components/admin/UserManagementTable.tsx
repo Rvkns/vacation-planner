@@ -99,7 +99,6 @@ export function UserManagementTable({ initialUsers }: UserManagementTableProps) 
                         placeholder="Cerca per nome o ruolo..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        icon={<Search className="w-4 h-4" />}
                     />
                 </div>
             </CardHeader>
