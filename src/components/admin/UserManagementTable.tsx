@@ -125,7 +125,7 @@ export function UserManagementTable({ initialUsers }: UserManagementTableProps) 
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <Badge variant={user.role === 'ADMIN' ? 'default' : user.role === 'MANAGER' ? 'secondary' : 'outline'}>
+                                        <Badge variant={user.role === 'ADMIN' ? 'danger' : user.role === 'MANAGER' ? 'warning' : 'default'}>
                                             {user.role}
                                         </Badge>
                                     </td>
