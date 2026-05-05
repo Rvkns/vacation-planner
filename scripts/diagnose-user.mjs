@@ -31,7 +31,7 @@ if (!process.env.DATABASE_URL) {
 const sql = neon(process.env.DATABASE_URL);
 
 async function checkUser() {
-    const users = await sql`SELECT id, first_name, last_name, role FROM users WHERE first_name = 'Valerio'`;
+    const users = await sql`SELECT id, first_name, last_name, date_of_birth, role FROM users WHERE first_name = 'Valerio'`;
     console.log(users);
 }
 

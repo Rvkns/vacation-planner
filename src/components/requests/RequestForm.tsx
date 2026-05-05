@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { LeaveType, CreateLeaveRequest } from '@/types';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CalendarDays } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface RequestFormProps {
@@ -64,6 +64,28 @@ export default function RequestForm({ initialDate, onSuccess, onCancel }: Reques
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const generateOutlookLink = () => {
+        let start = `${formData.startDate}T09:00:00`;
+        let end = `${formData.endDate}T18:00:00`;
+
+        if (formData.type === 'VACATION') {
+            if (vacationDuration === 'HALF_MORNING') {
+                end = `${formData.startDate}T13:00:00`;
+            } else if (vacationDuration === 'HALF_AFTERNOON') {
+                start = `${formData.startDate}T14:00:00`;
+                end = `${formData.startDate}T18:00:00`;
+            }
+        } else {
+            if (formData.startTime) start = `${formData.startDate}T${formData.startTime}:00`;
+            if (formData.endTime) end = `${formData.endDate}T${formData.endTime}:00`;
+        }
+
+        const subject = encodeURIComponent('Assenza Pianificata');
+        const body = encodeURIComponent('Assenza aggiunta da VacaPlanner');
+        
+        return `https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&subject=${subject}&startdt=${start}&enddt=${end}&body=${body}`;
     };
 
     return (
@@ -203,20 +225,32 @@ export default function RequestForm({ initialDate, onSuccess, onCancel }: Reques
                 </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={onCancel}>
-                    Annulla
-                </Button>
-                <Button type="submit" disabled={isLoading}>
-                    {isLoading ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Invio...
-                        </>
-                    ) : (
-                        'Invia Richiesta'
-                    )}
-                </Button>
+            <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-gray-100 dark:border-gray-800 mt-6">
+                <a
+                    href={generateOutlookLink()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 bg-[#0078D4]/10 text-[#0078D4] hover:bg-[#0078D4]/20 hover:text-[#0078D4] dark:bg-[#0078D4]/20 dark:hover:bg-[#0078D4]/30 px-4 py-2 rounded-lg text-sm font-semibold transition-colors w-full sm:w-auto"
+                    title="Apri in Outlook Calendar"
+                >
+                    <CalendarDays className="w-4 h-4" />
+                    Pianifica in Outlook
+                </a>
+                <div className="flex gap-3 w-full sm:w-auto">
+                    <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">
+                        Annulla
+                    </Button>
+                    <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
+                        {isLoading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Invio...
+                            </>
+                        ) : (
+                            'Invia Richiesta'
+                        )}
+                    </Button>
+                </div>
             </div>
         </form>
     );

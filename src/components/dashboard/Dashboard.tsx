@@ -455,18 +455,6 @@ export default function Dashboard() {
                         <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
                             Inserisci Nuova Richiesta
                         </h3>
-                        {selectedDate && (
-                            <a
-                                href={`https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&subject=Assenza%20Pianificata&startdt=${format(selectedDate, "yyyy-MM-dd'T'09:00:00")}&enddt=${format(selectedDate, "yyyy-MM-dd'T'18:00:00")}&body=Assenza%20aggiunta%20da%20VacaPlanner`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-2 bg-[#0078D4]/10 text-[#0078D4] hover:bg-[#0078D4]/20 hover:text-[#0078D4] dark:bg-[#0078D4]/20 dark:hover:bg-[#0078D4]/30 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors"
-                                title="Apri in Outlook Calendar"
-                            >
-                                <CalendarDays className="w-4 h-4" />
-                                Pianifica in Outlook
-                            </a>
-                        )}
                     </div>
                     <RequestForm
                         initialDate={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined}
