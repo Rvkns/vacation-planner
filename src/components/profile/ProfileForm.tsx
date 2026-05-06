@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
-import { Loader2, Save, User as UserIcon, Check } from 'lucide-react';
+import { Loader2, Save, User as UserIcon, Check, KeyRound, Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
 import Image from 'next/image';
 import { USER_COLORS } from '@/lib/colors';
 
@@ -32,6 +32,20 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         personalHoursTotal: user.personalHoursTotal || 0,
         themeColor: user.themeColor || '',
     });
+
+    const [passwordForm, setPasswordForm] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+    });
+    const [showPasswords, setShowPasswords] = useState({
+        current: false,
+        new: false,
+        confirm: false,
+    });
+    const [passwordLoading, setPasswordLoading] = useState(false);
+    const [passwordError, setPasswordError] = useState<string | null>(null);
+    const [passwordSuccess, setPasswordSuccess] = useState(false);
 
     // Sync state with user prop when it changes (e.g. after refresh)
     useEffect(() => {
@@ -94,6 +108,42 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         }
     };
 
+    const handlePasswordChange = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setPasswordError(null);
+        setPasswordSuccess(false);
+
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            setPasswordError('Le nuove password non coincidono');
+            return;
+        }
+
+        setPasswordLoading(true);
+        try {
+            const res = await fetch('/api/users/me/password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    currentPassword: passwordForm.currentPassword,
+                    newPassword: passwordForm.newPassword,
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                setPasswordError(data.error || 'Errore durante il cambio password');
+            } else {
+                setPasswordSuccess(true);
+                setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            }
+        } catch {
+            setPasswordError('Errore di rete, riprova');
+        } finally {
+            setPasswordLoading(false);
+        }
+    };
+
     return (
         <div className="grid gap-6 md:grid-cols-2">
             {/* Avatar Section */}
@@ -144,6 +194,109 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                             />
                         </div>
                     </div>
+                </CardContent>
+            </Card>
+
+            {/* Change Password Section */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <KeyRound className="w-5 h-5" />
+                        Cambia Password
+                    </CardTitle>
+                    <CardDescription>Aggiorna la password del tuo account</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handlePasswordChange} className="space-y-4">
+                        {passwordSuccess && (
+                            <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 rounded-md flex items-center gap-2 text-sm">
+                                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                                Password aggiornata con successo!
+                            </div>
+                        )}
+                        {passwordError && (
+                            <div className="p-3 bg-destructive/10 text-destructive rounded-md flex items-center gap-2 text-sm">
+                                <AlertCircle className="w-4 h-4 shrink-0" />
+                                {passwordError}
+                            </div>
+                        )}
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Password Attuale</label>
+                            <div className="relative">
+                                <Input
+                                    type={showPasswords.current ? 'text' : 'password'}
+                                    required
+                                    value={passwordForm.currentPassword}
+                                    onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                                    placeholder="••••••••"
+                                />
+                                <button
+                                    type="button"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
+                                >
+                                    {showPasswords.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Nuova Password</label>
+                            <div className="relative">
+                                <Input
+                                    type={showPasswords.new ? 'text' : 'password'}
+                                    required
+                                    value={passwordForm.newPassword}
+                                    onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                                    placeholder="Min. 8 caratteri"
+                                />
+                                <button
+                                    type="button"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
+                                >
+                                    {showPasswords.new ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Conferma Nuova Password</label>
+                            <div className="relative">
+                                <Input
+                                    type={showPasswords.confirm ? 'text' : 'password'}
+                                    required
+                                    value={passwordForm.confirmPassword}
+                                    onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                                    placeholder="Ripeti la nuova password"
+                                />
+                                <button
+                                    type="button"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
+                                >
+                                    {showPasswords.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="pt-2 flex justify-end">
+                            <Button type="submit" disabled={passwordLoading} className="w-full md:w-auto">
+                                {passwordLoading ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Aggiornamento...
+                                    </>
+                                ) : (
+                                    <>
+                                        <KeyRound className="mr-2 h-4 w-4" />
+                                        Aggiorna Password
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </form>
                 </CardContent>
             </Card>
 
