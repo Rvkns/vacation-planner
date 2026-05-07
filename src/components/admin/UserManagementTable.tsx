@@ -12,7 +12,7 @@ import { User } from '@/db/schema';
 import { Search, KeyRound, Edit2, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface UserManagementTableProps {
-    initialUsers: Omit<User, 'password' | 'dateOfBirth'>[];
+    initialUsers: Omit<User, 'password'>[];
 }
 
 export function UserManagementTable({ initialUsers }: UserManagementTableProps) {
@@ -22,7 +22,7 @@ export function UserManagementTable({ initialUsers }: UserManagementTableProps) 
     const [error, setError] = useState<string | null>(null);
 
     // Modal state
-    const [editingUser, setEditingUser] = useState<Omit<User, 'password' | 'dateOfBirth'> | null>(null);
+    const [editingUser, setEditingUser] = useState<Omit<User, 'password'> | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     
     // Password reset modal state
