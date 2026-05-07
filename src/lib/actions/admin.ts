@@ -6,6 +6,7 @@ import { users } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 
 // Helper per verificare se l'utente loggato è ADMIN
 async function verifyAdmin() {
@@ -23,7 +24,8 @@ export async function getAllUsers() {
         const allUsers = await db.query.users.findMany({
             orderBy: [desc(users.createdAt)],
             columns: {
-                password: false, // Non esportiamo mai la password hashata
+                password: false,
+                dateOfBirth: false,
             }
         });
         return { success: true, data: allUsers };
@@ -36,11 +38,11 @@ export async function getAllUsers() {
 export async function resetUserPassword(userId: string) {
     await verifyAdmin();
     try {
-        // Genera una password sicura casuale (es. Temp-8xK2!)
         const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+        const randomBuffer = randomBytes(8);
         let tempPassword = "Temp-";
-        for (let i = 0, n = charset.length; i < 8; ++i) {
-            tempPassword += charset.charAt(Math.floor(Math.random() * n));
+        for (let i = 0; i < 8; i++) {
+            tempPassword += charset[randomBuffer[i] % charset.length];
         }
 
         const hashedPassword = await bcrypt.hash(tempPassword, 10);

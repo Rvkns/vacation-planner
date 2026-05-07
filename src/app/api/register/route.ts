@@ -26,6 +26,18 @@ export async function POST(req: NextRequest) {
 
         const { firstName, lastName, dateOfBirth, password } = validatedFields.data;
 
+        // Check if this is the first user (will be admin)
+        const [userCount] = await db.select({ count: count() }).from(users);
+        const isFirstUser = userCount.count === 0;
+
+        // Registration is only open for the initial admin setup or when explicitly enabled
+        if (!isFirstUser && process.env.REGISTRATION_OPEN !== 'true') {
+            return NextResponse.json(
+                { error: 'La registrazione è attualmente disabilitata. Contatta un amministratore.' },
+                { status: 403 }
+            );
+        }
+
         // Check if user already exists (same firstName + lastName + dateOfBirth)
         const existingUser = await db.query.users.findFirst({
             where: and(
@@ -41,10 +53,6 @@ export async function POST(req: NextRequest) {
                 { status: 400 }
             );
         }
-
-        // Check if this is the first user (will be admin)
-        const [userCount] = await db.select({ count: count() }).from(users);
-        const isFirstUser = userCount.count === 0;
 
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);

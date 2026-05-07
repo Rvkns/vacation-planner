@@ -16,19 +16,31 @@ export async function PATCH(
 ) {
     try {
         const session = await auth();
-        // In a real app, you would check if session.user.role === 'ADMIN' or 'MANAGER'
         if (!session?.user) {
             return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
+        }
+
+        const callerRole = session.user.role;
+        if (callerRole !== 'ADMIN' && callerRole !== 'MANAGER') {
+            return NextResponse.json({ error: 'Accesso negato. Ruolo insufficiente.' }, { status: 403 });
         }
 
         const { id } = await params;
         const body = await req.json();
         const { role } = updateRoleSchema.parse(body);
 
-        // Prevent self-demotion if needed, or other business logic
-        // For now, we allow any logged-in user to promote/demote for demo purposes, 
-        // OR ideally enforce role checks. 
-        // To keep it simple for this request (Manager view):
+        // Solo ADMIN può assegnare o revocare il ruolo ADMIN
+        if (role === 'ADMIN' && callerRole !== 'ADMIN') {
+            return NextResponse.json({ error: 'Solo un amministratore può assegnare il ruolo ADMIN.' }, { status: 403 });
+        }
+
+        // Impedisce l'auto-declassamento dell'unico admin
+        if (id === session.user.id && callerRole === 'ADMIN' && role !== 'ADMIN') {
+            const adminCount = await db.select().from(users).where(eq(users.role, 'ADMIN'));
+            if (adminCount.length <= 1) {
+                return NextResponse.json({ error: 'Impossibile rimuovere l\'unico amministratore.' }, { status: 403 });
+            }
+        }
 
         await db
             .update(users)

@@ -31,11 +31,19 @@ if (!process.env.DATABASE_URL) {
 const sql = neon(process.env.DATABASE_URL);
 
 async function fixUser() {
-    console.log('Updating Samuele Sbardella...');
+    const firstName = process.env.TARGET_FIRST_NAME;
+    const lastName = process.env.TARGET_LAST_NAME;
+    const dob = process.env.TARGET_DOB;
+
+    if (!firstName || !lastName || !dob) {
+        console.error('Set TARGET_FIRST_NAME, TARGET_LAST_NAME, TARGET_DOB env vars before running.');
+        process.exit(1);
+    }
+
     const result = await sql`
-        UPDATE users 
-        SET date_of_birth = '1997-06-19' 
-        WHERE first_name = 'Samuele' AND last_name = 'Sbardella'
+        UPDATE users
+        SET date_of_birth = ${dob}
+        WHERE first_name = ${firstName} AND last_name = ${lastName}
         RETURNING id, first_name, last_name, date_of_birth
     `;
     console.log('Update result:', result);
