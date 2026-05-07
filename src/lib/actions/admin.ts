@@ -25,7 +25,6 @@ export async function getAllUsers() {
             orderBy: [desc(users.createdAt)],
             columns: {
                 password: false,
-                dateOfBirth: false,
             }
         });
         return { success: true, data: allUsers };
