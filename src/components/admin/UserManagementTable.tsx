@@ -10,11 +10,9 @@ import { Badge } from '@/components/ui/Badge';
 import { resetUserPassword, updateUser } from '@/lib/actions/admin';
 import { User } from '@/db/schema';
 import { Search, KeyRound, Edit2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { format } from 'date-fns';
-import { it } from 'date-fns/locale';
 
 interface UserManagementTableProps {
-    initialUsers: Omit<User, 'password'>[];
+    initialUsers: Omit<User, 'password' | 'dateOfBirth'>[];
 }
 
 export function UserManagementTable({ initialUsers }: UserManagementTableProps) {
@@ -24,7 +22,7 @@ export function UserManagementTable({ initialUsers }: UserManagementTableProps) 
     const [error, setError] = useState<string | null>(null);
 
     // Modal state
-    const [editingUser, setEditingUser] = useState<Omit<User, 'password'> | null>(null);
+    const [editingUser, setEditingUser] = useState<Omit<User, 'password' | 'dateOfBirth'> | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     
     // Password reset modal state
@@ -121,7 +119,6 @@ export function UserManagementTable({ initialUsers }: UserManagementTableProps) 
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col">
                                             <span className="font-semibold text-foreground">{user.firstName} {user.lastName}</span>
-                                            <span className="text-xs text-muted-foreground">Nato/a: {format(new Date(user.dateOfBirth), 'dd/MM/yyyy')}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
