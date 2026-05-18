@@ -60,7 +60,10 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 body: JSON.stringify(formData),
             });
 
-            if (!res.ok) throw new Error('Failed to update profile');
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || 'Errore durante l\'aggiornamento del profilo');
+            }
 
             const updatedUser = await res.json();
 
@@ -69,9 +72,11 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 ...updatedUser
             });
 
+            alert('Profilo aggiornato con successo! 🎉');
             router.refresh();
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
+            alert(error.message || 'Errore durante l\'aggiornamento del profilo');
         } finally {
             setIsLoading(false);
         }

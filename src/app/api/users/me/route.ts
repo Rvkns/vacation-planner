@@ -12,7 +12,7 @@ const updateProfileSchema = z.object({
     department: z.string().optional(),
     bio: z.string().optional(),
     phoneNumber: z.string().optional(),
-    avatarUrl: z.string().url().optional().or(z.literal('')),
+    avatarUrl: z.string().optional().or(z.literal('')),
     themeColor: z.string().optional(),
 });
 
