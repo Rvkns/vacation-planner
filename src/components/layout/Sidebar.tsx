@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession, signOut } from 'next-auth/react';
-import { CalendarDays, FileText, Users, LogOut, Menu, X, User as UserIcon, BarChart3, Settings } from 'lucide-react';
+import { CalendarDays, FileText, Users, LogOut, Menu, X, User as UserIcon, BarChart3, Settings, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -17,6 +17,7 @@ const navigation = [
     { name: 'Analytics & Riepilogo', href: '/analytics', icon: BarChart3 },
     { name: 'Profilo', href: '/profile', icon: UserIcon },
     { name: 'Gestione Utenti', href: '/admin/users', icon: Settings, adminOnly: true },
+    { name: 'Wiki & Guida', href: '/wiki', icon: BookOpen },
 ];
 
 export default function Sidebar() {
