@@ -144,10 +144,12 @@ export default function Dashboard() {
                 setLeaveRequests([newRequest, ...leaveRequests]);
                 setIsModalOpen(false);
             } else {
-                alert('Errore durante la creazione della richiesta');
+                const errorData = await res.json().catch(() => ({}));
+                alert(errorData.error || 'Errore durante la creazione della richiesta');
             }
         } catch (error) {
             console.error('Error creating request:', error);
+            alert('Errore di connessione o errore imprevisto');
         }
     };
 

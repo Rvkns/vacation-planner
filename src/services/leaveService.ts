@@ -27,7 +27,10 @@ class LeaveService {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
-        if (!response.ok) throw new Error('Failed to create leave request');
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || 'Failed to create leave request');
+        }
         return response.json();
     }
 

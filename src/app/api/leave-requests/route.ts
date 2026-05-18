@@ -97,6 +97,27 @@ export async function POST(req: NextRequest) {
 
         const { startDate, endDate, startTime, endTime, type, reason } = validatedFields.data;
 
+        // Check for duplicate/overlapping full-day vacation requests
+        if (type === 'VACATION' && !startTime && !endTime) {
+            const overlapping = await db.query.leaveRequests.findFirst({
+                where: sql`
+                    ${leaveRequests.userId} = ${session.user.id} AND
+                    ${leaveRequests.type} = 'VACATION' AND
+                    ${leaveRequests.status} != 'REJECTED' AND
+                    (
+                        (${leaveRequests.startDate} <= ${endDate} AND ${leaveRequests.endDate} >= ${startDate})
+                    )
+                `
+            });
+
+            if (overlapping) {
+                return NextResponse.json(
+                    { error: 'Hai già preso ferie per questo giorno' },
+                    { status: 400 }
+                );
+            }
+        }
+
         // Create leave request — auto-approved, no manual approval needed
         const [newRequest] = await db.insert(leaveRequests).values({
             userId: session.user.id,

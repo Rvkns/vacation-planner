@@ -60,9 +60,9 @@ export default function MyRequests() {
             setRequests([created, ...requests]);
             setShowForm(false);
             setFormData({ startDate: '', endDate: '', type: 'VACATION', reason: '' });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error creating request:', error);
-            alert('Errore durante la creazione della richiesta');
+            alert(error.message || 'Errore durante la creazione della richiesta');
         }
     };
 
