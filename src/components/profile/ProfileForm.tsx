@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
 import { Loader2, Save, User as UserIcon, Check } from 'lucide-react';
-import Image from 'next/image';
 import { USER_COLORS } from '@/lib/colors';
 
 interface ProfileFormProps {
@@ -105,11 +104,10 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 <CardContent className="space-y-6">
                     <div className="flex justify-center">
                         <div className="relative w-32 h-32 rounded-full overflow-hidden ring-4 ring-gray-100 dark:ring-gray-800 shadow-md">
-                            <Image
+                            <img
                                 src={formData.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(formData.name)}`}
                                 alt="Avatar Preview"
-                                fill
-                                className="object-cover"
+                                className="w-full h-full object-cover"
                             />
                         </div>
                     </div>

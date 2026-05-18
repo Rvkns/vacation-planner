@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
-import Image from 'next/image';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 const navigation = [
@@ -87,12 +86,12 @@ export default function Sidebar() {
 
                         <div className="flex items-center gap-4 relative">
                             <div className="relative">
-                                <Image
+                                <img
                                     src={avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(currentUser.name)}`}
                                     alt={currentUser.name || 'User Avatar'}
                                     width={40}
                                     height={40}
-                                    className="rounded-full ring-2 ring-white dark:ring-neutral-800 shadow-sm"
+                                    className="rounded-full ring-2 ring-white dark:ring-neutral-800 shadow-sm object-cover"
                                 />
                                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white dark:ring-neutral-900" />
                             </div>
