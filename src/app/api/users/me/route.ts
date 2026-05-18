@@ -16,6 +16,46 @@ const updateProfileSchema = z.object({
     themeColor: z.string().optional(),
 });
 
+export async function GET() {
+    try {
+        const session = await auth();
+
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
+        }
+
+        const user = await db.query.users.findFirst({
+            where: eq(users.id, session.user.id),
+            columns: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                avatarUrl: true,
+                jobTitle: true,
+                department: true,
+                bio: true,
+                phoneNumber: true,
+                vacationDaysTotal: true,
+                vacationDaysUsed: true,
+                personalHoursTotal: true,
+                personalHoursUsed: true,
+                themeColor: true,
+            },
+        });
+
+        if (!user) {
+            return NextResponse.json({ error: 'Utente non trovato' }, { status: 404 });
+        }
+
+        return NextResponse.json(user);
+    } catch (error) {
+        console.error('Error fetching profile:', error);
+        return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 });
+    }
+}
+
 export async function PATCH(req: NextRequest) {
     try {
         const session = await auth();
