@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { User } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
 import { Loader2, Save, User as UserIcon, Check } from 'lucide-react';
@@ -178,11 +179,16 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Dipartimento</label>
-                                <Input
+                                <Select
                                     value={formData.department}
                                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                                    placeholder="es. Engineering"
-                                />
+                                >
+                                    <option value="">-- Seleziona dipartimento --</option>
+                                    <option value="Data Management">Data Management</option>
+                                    <option value="Digital">Digital</option>
+                                    <option value="Corporate">Corporate</option>
+                                    <option value="Innovation">Innovation</option>
+                                </Select>
                             </div>
                         </div>
 
