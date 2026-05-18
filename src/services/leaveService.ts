@@ -1,4 +1,5 @@
 import { LeaveRequest, CreateLeaveRequest, LeaveStatus } from '@/types';
+import { calculateWorkingDays } from '@/lib/dateUtils';
 
 // Leave Service - Updated to use API
 class LeaveService {
@@ -47,10 +48,7 @@ class LeaveService {
             return hours > 0 ? hours / 8 : 0;
         }
 
-        const start = new Date(request.startDate);
-        const end = new Date(request.endDate);
-        const diffTime = Math.abs(end.getTime() - start.getTime());
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        return calculateWorkingDays(request.startDate, request.endDate);
     }
 
     calculateTotalHours(request: LeaveRequest): number {
