@@ -9,6 +9,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Shield, ShieldAlert, ShieldCheck, Pencil, Check, X, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useCurrentUser, useUsers } from '@/hooks/useData';
 
 // --- Vacation Stats Modal ---
 interface VacationStatsModalProps {
@@ -21,6 +22,7 @@ interface VacationStatsModalProps {
 
 export function VacationStatsModal({ isOpen, onClose, total, used, onUpdate }: VacationStatsModalProps) {
     const remaining = total - used;
+    const { mutateCurrentUser } = useCurrentUser();
     const [isEditing, setIsEditing] = useState(false);
     const [newRemaining, setNewRemaining] = useState(remaining.toString());
     const [isSaving, setIsSaving] = useState(false);
@@ -42,6 +44,7 @@ export function VacationStatsModal({ isOpen, onClose, total, used, onUpdate }: V
             });
 
             if (res.ok) {
+                await mutateCurrentUser();
                 setIsEditing(false);
                 if (onUpdate) onUpdate();
             } else {
@@ -142,6 +145,7 @@ interface TeamManagementModalProps {
 
 export function TeamManagementModal({ isOpen, onClose, users, currentUserRole }: TeamManagementModalProps) {
     const router = useRouter();
+    const { mutateUsers } = useUsers();
     const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
 
     // Filter out current user from the list if desired, or show everyone.
@@ -159,7 +163,7 @@ export function TeamManagementModal({ isOpen, onClose, users, currentUserRole }:
             });
 
             if (res.ok) {
-                router.refresh(); // Refresh to update user list in parent
+                await mutateUsers();
             } else {
                 alert('Errore durante l\'aggiornamento del ruolo');
             }

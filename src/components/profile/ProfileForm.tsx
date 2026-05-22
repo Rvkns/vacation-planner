@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Textarea } from '@/components/ui/Textarea';
 import { Loader2, Save, User as UserIcon, Check } from 'lucide-react';
 import { USER_COLORS } from '@/lib/colors';
+import { useCurrentUser } from '@/hooks/useData';
 
 interface ProfileFormProps {
     user: User;
@@ -20,6 +21,7 @@ interface ProfileFormProps {
 export default function ProfileForm({ user }: ProfileFormProps) {
     const router = useRouter();
     const { update } = useSession();
+    const { mutateCurrentUser } = useCurrentUser();
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: user.name || '',
@@ -73,6 +75,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 ...updatedUser
             });
 
+            await mutateCurrentUser(); // Update SWR cache
             alert('Profilo aggiornato con successo! 🎉');
             router.refresh();
         } catch (error: any) {

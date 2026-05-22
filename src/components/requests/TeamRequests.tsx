@@ -5,50 +5,29 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { leaveService } from '@/services/leaveService';
 import { Users as UsersIcon, Search, Filter, SortAsc, XCircle } from 'lucide-react';
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { LeaveRequest, User } from '@/types';
+import { useUsers, useLeaveRequests } from '@/hooks/useData';
 import Image from 'next/image';
 
 export default function TeamRequests() {
     const { data: session } = useSession();
     const currentUser = session?.user;
-    const [allRequests, setAllRequests] = useState<LeaveRequest[]>([]);
-    const [allUsers, setAllUsers] = useState<User[]>([]);
-    
+    const { users: allUsers, isLoading: isLoadingUsers } = useUsers();
+    const { leaveRequests: allRequestsRaw, isLoading: isLoadingRequests } = useLeaveRequests();
+
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState<'ALL' | 'VACATION' | 'SICK' | 'PERSONAL'>('ALL');
     const [sortBy, setSortBy] = useState<'createdAt_desc' | 'createdAt_asc' | 'userName_asc'>('createdAt_desc');
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!currentUser) return;
-
-            try {
-                const [requestsRes, usersRes] = await Promise.all([
-                    fetch('/api/leave-requests'),
-                    fetch('/api/users'),
-                ]);
-
-                if (requestsRes.ok) {
-                    const data = await requestsRes.json();
-                    setAllRequests(data.sort((a: LeaveRequest, b: LeaveRequest) =>
-                        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-                    ));
-                }
-
-                if (usersRes.ok) {
-                    setAllUsers(await usersRes.json());
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
-
-        fetchData();
-    }, [currentUser]);
+    const allRequests = useMemo(() => {
+        return [...allRequestsRaw].sort((a: LeaveRequest, b: LeaveRequest) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+    }, [allRequestsRaw]);
 
     const getTypeLabel = (type: string) => {
         const labels: Record<string, string> = {
@@ -102,6 +81,10 @@ export default function TeamRequests() {
 
     if (!currentUser) {
         return null;
+    }
+    
+    if (isLoadingUsers || isLoadingRequests) {
+        return <div className="p-12 text-center text-neutral-500">Caricamento in corso...</div>;
     }
 
     return (

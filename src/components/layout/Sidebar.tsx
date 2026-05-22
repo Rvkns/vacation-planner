@@ -4,10 +4,11 @@ import { useSession, signOut } from 'next-auth/react';
 import { CalendarDays, FileText, Users, LogOut, Menu, X, User as UserIcon, BarChart3, Settings, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { useCurrentUser } from '@/hooks/useData';
 
 const navigation = [
     { name: 'Dashboard', href: '/', icon: CalendarDays },
@@ -23,17 +24,8 @@ export default function Sidebar() {
     const { data: session } = useSession();
     const pathname = usePathname();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-
-    // Fetch user avatar from API (not stored in JWT to avoid size issues)
-    useEffect(() => {
-        if (session?.user?.id) {
-            fetch('/api/users/me')
-                .then(res => res.json())
-                .then(data => setAvatarUrl(data.avatarUrl))
-                .catch(() => setAvatarUrl(null));
-        }
-    }, [session?.user?.id]);
+    const { currentUser: dbUser } = useCurrentUser();
+    const avatarUrl = dbUser?.avatarUrl || null;
 
     if (!session?.user) return null;
 
