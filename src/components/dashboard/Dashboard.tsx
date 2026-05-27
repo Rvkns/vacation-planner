@@ -204,6 +204,30 @@ export default function Dashboard() {
                     </Card>
                 </motion.div>
 
+                {/* 3. Vacation Taken Stats */}
+                <motion.div variants={item}>
+                    <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-neutral-900 border-l-4 border-l-blue-500">
+                        <CardContent className="flex items-start justify-between p-8">
+                            <div className="space-y-4">
+                                <div className={`p-3 w-fit rounded-2xl bg-blue-500 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform duration-300`}>
+                                    <CalendarDays className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 tracking-wide uppercase">
+                                        Ferie Prese
+                                    </p>
+                                    <h3 className="text-4xl font-bold mt-1 text-neutral-900 dark:text-white">
+                                        {usedDays}
+                                    </h3>
+                                    <p className="text-sm mt-1 font-medium text-blue-600 dark:text-blue-500">
+                                        giorni usufruiti
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
                 {/* 4. Team Management */}
                 <motion.div variants={item} onClick={() => setActiveModal('TEAM')} className="cursor-pointer">
                     <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-neutral-900 border-l-4 border-l-neutral-500">

@@ -14,6 +14,7 @@ const updateProfileSchema = z.object({
     phoneNumber: z.string().optional(),
     avatarUrl: z.string().optional().or(z.literal('')),
     themeColor: z.string().optional(),
+    vacationDaysTotal: z.number().optional(),
 });
 
 export async function GET() {
@@ -77,6 +78,7 @@ export async function PATCH(req: NextRequest) {
                 ...(validatedData.phoneNumber !== undefined && { phoneNumber: validatedData.phoneNumber }),
                 ...(validatedData.avatarUrl !== undefined && { avatarUrl: validatedData.avatarUrl === '' ? null : validatedData.avatarUrl }),
                 ...(validatedData.themeColor !== undefined && { themeColor: validatedData.themeColor }),
+                ...(validatedData.vacationDaysTotal !== undefined && { vacationDaysTotal: validatedData.vacationDaysTotal }),
                 updatedAt: new Date(),
             })
             .where(eq(users.id, session.user.id))
