@@ -228,15 +228,16 @@ export default function WikiPage() {
             content: (
                 <div className="text-neutral-600 dark:text-neutral-300 space-y-2">
                     <p>
-                        Se sei loggato e vuoi semplicemente cambiare la tua password, puoi farlo visitando la pagina **"Profilo"** dal menu laterale.
+                        Se sei loggato e desideri cambiare la tua password in qualsiasi momento, puoi farlo nella sezione **Sicurezza Account** nella pagina del tuo **Profilo**.
                     </p>
                     <p>
                         Se hai smarrito le credenziali e non riesci più ad accedere:
                     </p>
-                    <ul className="list-disc list-inside pl-2 text-sm">
+                    <ul className="list-disc list-inside pl-2 text-sm space-y-1">
                         <li>Contatta l'amministratore del sistema (Team Manager).</li>
                         <li>L'amministratore andrà nella sezione **Gestione Utenti**, selezionerà il tuo profilo e cliccherà su **"Reimposta Password"**.</li>
-                        <li>Verrà generata una password temporanea sicura che ti verrà comunicata. Al primo accesso, ricordati di cambiarla visitando la pagina Profilo!</li>
+                        <li>Verrà generata una password temporanea che ti verrà comunicata.</li>
+                        <li>Al tuo primo accesso con la password temporanea, il sistema ti reindirizzerà automaticamente a una pagina dedicata in cui **dovrai impostare subito la tua nuova password definitiva** prima di poter navigare nel sito.</li>
                     </ul>
                 </div>
             )
