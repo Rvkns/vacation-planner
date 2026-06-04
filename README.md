@@ -70,6 +70,7 @@ Apri [http://localhost:3000](http://localhost:3000)
 - ✅ Statistiche e analytics
 - ✅ Design responsive moderno
 - ✅ Database PostgreSQL persistente
+- ✅ Gestione Password Sicura (password temporanee da amministratore con cambio password obbligatorio al primo accesso e modifica dal profilo)
 
 ## 👥 Ruoli Utente
 

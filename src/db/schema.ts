@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, integer, timestamp, pgEnum, text, date, uniqueIndex, real } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, integer, timestamp, pgEnum, text, date, uniqueIndex, real, boolean } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Enums
@@ -22,6 +22,7 @@ export const users = pgTable('users', {
     department: varchar('department', { length: 255 }),
     bio: text('bio'),
     phoneNumber: varchar('phone_number', { length: 50 }),
+    isPasswordTemporary: boolean('is_password_temporary').default(false).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
     personalHoursTotal: integer('personal_hours_total').default(32).notNull(),

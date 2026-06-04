@@ -64,6 +64,7 @@ export default {
                     personalHoursTotal: user.personalHoursTotal,
                     personalHoursUsed: user.personalHoursUsed,
                     avatarUrl: user.avatarUrl,
+                    isPasswordTemporary: user.isPasswordTemporary,
                 };
             },
         }),
@@ -72,7 +73,7 @@ export default {
         signIn: '/login',
     },
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             if (user) {
                 token.id = user.id;
                 token.role = user.role;
@@ -80,18 +81,28 @@ export default {
                 token.vacationDaysUsed = user.vacationDaysUsed;
                 token.personalHoursTotal = user.personalHoursTotal;
                 token.personalHoursUsed = user.personalHoursUsed;
+                token.isPasswordTemporary = user.isPasswordTemporary;
                 // Note: avatarUrl removed to prevent JWT size issues with Base64 images
             }
+            
+            // Support session updates on the client side
+            if (trigger === 'update' && session) {
+                if (session.isPasswordTemporary !== undefined) {
+                    token.isPasswordTemporary = session.isPasswordTemporary;
+                }
+            }
+            
             return token;
         },
         async session({ session, token }) {
             if (session.user) {
                 session.user.id = token.id as string;
-                session.user.role = token.role as 'ADMIN' | 'USER';
+                session.user.role = token.role as 'ADMIN' | 'USER' | 'MANAGER';
                 session.user.vacationDaysTotal = token.vacationDaysTotal as number;
                 session.user.vacationDaysUsed = token.vacationDaysUsed as number;
                 session.user.personalHoursTotal = token.personalHoursTotal as number;
                 session.user.personalHoursUsed = token.personalHoursUsed as number;
+                session.user.isPasswordTemporary = token.isPasswordTemporary as boolean;
                 // avatarUrl will be fetched from DB when needed
             }
             return session;

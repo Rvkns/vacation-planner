@@ -32,7 +32,7 @@ export default async function RootLayout({
           enableSystem
         >
           <SessionProvider session={session}>
-            {session ? (
+            {session && !session.user.isPasswordTemporary ? (
               <div className="flex min-h-screen bg-gray-50/50 dark:bg-black/50 transition-colors duration-300">
                 <Sidebar />
                 <main className="flex-1 overflow-y-auto">

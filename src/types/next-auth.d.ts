@@ -8,6 +8,7 @@ declare module 'next-auth' {
             role: 'ADMIN' | 'USER' | 'MANAGER';
             vacationDaysTotal: number;
             vacationDaysUsed: number;
+            isPasswordTemporary: boolean;
             // avatarUrl removed - fetch from DB when needed to avoid JWT size issues
         } & DefaultSession['user'];
     }
@@ -20,11 +21,11 @@ declare module 'next-auth' {
         lastName: string;
         role: 'ADMIN' | 'USER' | 'MANAGER';
         vacationDaysTotal: number;
-        vacationDaysTotal: number;
         vacationDaysUsed: number;
         personalHoursTotal: number;
         personalHoursUsed: number;
         avatarUrl: string | null;
+        isPasswordTemporary: boolean;
     }
 }
 
@@ -34,6 +35,7 @@ declare module 'next-auth/jwt' {
         role: 'ADMIN' | 'USER' | 'MANAGER';
         vacationDaysTotal: number;
         vacationDaysUsed: number;
+        isPasswordTemporary: boolean;
         // avatarUrl removed - fetch from DB when needed to avoid JWT size issues
     }
 }

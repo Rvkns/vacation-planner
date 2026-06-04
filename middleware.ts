@@ -18,7 +18,18 @@ export default auth((req) => {
 
     // Redirect to dashboard if accessing auth pages while logged in
     if (isAuthPage && isLoggedIn) {
+        if (req.auth?.user?.isPasswordTemporary) {
+            return NextResponse.redirect(new URL('/change-password', nextUrl));
+        }
         return NextResponse.redirect(new URL('/', nextUrl));
+    }
+
+    // Force user to change password if they have a temporary one
+    if (isLoggedIn && req.auth?.user?.isPasswordTemporary && nextUrl.pathname !== '/change-password') {
+        // Do not redirect NextAuth API requests or static assets (static matches are already excluded in matcher)
+        if (!nextUrl.pathname.startsWith('/api/auth')) {
+            return NextResponse.redirect(new URL('/change-password', nextUrl));
+        }
     }
 
     return NextResponse.next();

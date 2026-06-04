@@ -17,6 +17,7 @@ export interface User {
     personalHoursTotal: number;
     personalHoursUsed: number;
     themeColor?: string | null;
+    isPasswordTemporary: boolean;
 }
 
 // Leave Request types

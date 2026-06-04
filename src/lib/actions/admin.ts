@@ -47,7 +47,10 @@ export async function resetUserPassword(userId: string) {
         const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
         await db.update(users)
-            .set({ password: hashedPassword })
+            .set({ 
+                password: hashedPassword,
+                isPasswordTemporary: true,
+            })
             .where(eq(users.id, userId));
 
         revalidatePath('/admin/users');
