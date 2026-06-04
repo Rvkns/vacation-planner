@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { leaveRequests, users } from '@/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import { calculateWorkingDays } from '@/lib/dateUtils';
 
 
 // DELETE - Delete a leave request
@@ -44,11 +45,8 @@ export async function DELETE(
         await db.delete(leaveRequests).where(eq(leaveRequests.id, requestId));
 
         // Restore user balance (reverse of what was deducted on creation)
-        const start = new Date(request.startDate);
-        const end = new Date(request.endDate);
-
         if (request.type === 'VACATION') {
-            let days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+            let days = calculateWorkingDays(request.startDate, request.endDate);
 
             // Refund only 0.5 if it was a half-day request
             if (request.startTime && request.endTime) {
@@ -66,7 +64,7 @@ export async function DELETE(
                 const [eh, em] = request.endTime.split(':').map(Number);
                 hours = Math.max(0, (eh * 60 + em - (sh * 60 + sm)) / 60);
             } else {
-                const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                const days = calculateWorkingDays(request.startDate, request.endDate);
                 hours = days * 8;
             }
             await db

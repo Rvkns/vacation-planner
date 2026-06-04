@@ -17,45 +17,21 @@ import Modal from '@/components/ui/Modal';
 import RequestForm from '@/components/requests/RequestForm';
 import { VacationStatsModal, TeamManagementModal } from '@/components/dashboard/StatsModals';
 import { getUserColor } from '@/lib/colors';
+import { useUsers, useLeaveRequests } from '@/hooks/useData';
 
 type UserColorFn = (userId: string) => { ring: string; bg: string; text: string; hex: string };
 
 export default function Dashboard() {
     const { data: session } = useSession();
     const currentUser = session?.user;
-    const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
-    const [allUsers, setAllUsers] = useState<User[]>([]);
+    
+    const { users: allUsers, mutateUsers } = useUsers();
+    const { leaveRequests, mutateLeaveRequests } = useLeaveRequests();
+
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [activeModal, setActiveModal] = useState<'VACATION' | 'TEAM' | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-
-    const fetchData = async () => {
-        try {
-            const [requestsRes, usersRes] = await Promise.all([
-                fetch('/api/leave-requests'),
-                fetch('/api/users')
-            ]);
-
-            if (requestsRes.ok) {
-                const data = await requestsRes.json();
-                setLeaveRequests(data);
-            }
-
-            if (usersRes.ok) {
-                const data = await usersRes.json();
-                setAllUsers(data);
-            }
-        } catch (error) {
-            console.error('Error fetching dashboard data:', error);
-        }
-    };
-
-    useEffect(() => {
-        if (session) {
-            fetchData();
-        }
-    }, [session]);
 
     if (!session?.user) return null;
 
@@ -141,13 +117,15 @@ export default function Dashboard() {
 
             if (res.ok) {
                 const newRequest = await res.json();
-                setLeaveRequests([newRequest, ...leaveRequests]);
+                mutateLeaveRequests(); // Trigger SWR revalidation
                 setIsModalOpen(false);
             } else {
-                alert('Errore durante la creazione della richiesta');
+                const errorData = await res.json().catch(() => ({}));
+                alert(errorData.error || 'Errore durante la creazione della richiesta');
             }
         } catch (error) {
             console.error('Error creating request:', error);
+            alert('Errore di connessione o errore imprevisto');
         }
     };
 
@@ -219,6 +197,30 @@ export default function Dashboard() {
                                     </h3>
                                     <p className="text-sm mt-1 font-medium text-green-600 dark:text-green-500">
                                         Ferie/Permessi inviati
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                {/* 3. Vacation Taken Stats */}
+                <motion.div variants={item}>
+                    <Card className="h-full border-none shadow-lg hover:shadow-xl transition-all duration-300 group bg-white dark:bg-neutral-900 border-l-4 border-l-blue-500">
+                        <CardContent className="flex items-start justify-between p-8">
+                            <div className="space-y-4">
+                                <div className={`p-3 w-fit rounded-2xl bg-blue-500 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform duration-300`}>
+                                    <CalendarDays className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 tracking-wide uppercase">
+                                        Ferie Prese
+                                    </p>
+                                    <h3 className="text-4xl font-bold mt-1 text-neutral-900 dark:text-white">
+                                        {usedDays}
+                                    </h3>
+                                    <p className="text-sm mt-1 font-medium text-blue-600 dark:text-blue-500">
+                                        giorni usufruiti
                                     </p>
                                 </div>
                             </div>
@@ -363,7 +365,9 @@ export default function Dashboard() {
                 onClose={() => setActiveModal(null)}
                 total={totalDays}
                 used={usedDays}
-                onUpdate={fetchData}
+                onUpdate={() => {
+                    mutateUsers();
+                }}
             />
 
 

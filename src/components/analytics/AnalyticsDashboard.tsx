@@ -3,8 +3,9 @@
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { LeaveRequest, User } from '@/types';
+import { useUsers, useLeaveRequests } from '@/hooks/useData';
 import { format, isAfter, isBefore, startOfDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { motion } from 'framer-motion';
@@ -21,37 +22,13 @@ const COLORS = {
 
 export default function AnalyticsDashboard() {
     const { data: session } = useSession();
-    const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
-    const [allUsers, setAllUsers] = useState<User[]>([]);
+    const { users: allUsers, isLoading: isLoadingUsers } = useUsers();
+    const { leaveRequests, isLoading: isLoadingRequests } = useLeaveRequests();
+    
     const [viewMode, setViewMode] = useState<'CHARTS' | 'SUMMARY'>('CHARTS');
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [requestsRes, usersRes] = await Promise.all([
-                    fetch('/api/leave-requests'),
-                    fetch('/api/users')
-                ]);
-
-                if (requestsRes.ok) {
-                    setLeaveRequests(await requestsRes.json());
-                }
-                if (usersRes.ok) {
-                    setAllUsers(await usersRes.json());
-                }
-            } catch (error) {
-                console.error('Error fetching analytics data:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        if (session?.user) fetchData();
-    }, [session]);
 
     if (!session?.user) return null;
-    if (isLoading) return <div className="p-12 text-center text-neutral-500">Caricamento in corso...</div>;
+    if (isLoadingUsers || isLoadingRequests) return <div className="p-12 text-center text-neutral-500">Caricamento in corso...</div>;
 
     const getTypeLabel = (type: string) => {
         const labels: Record<string, string> = {

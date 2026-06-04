@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { leaveRequests, users } from '@/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import { calculateWorkingDays } from '@/lib/dateUtils';
 
 const createLeaveRequestSchema = z.object({
     startDate: z.string(),
@@ -96,6 +97,27 @@ export async function POST(req: NextRequest) {
 
         const { startDate, endDate, startTime, endTime, type, reason } = validatedFields.data;
 
+        // Check for duplicate/overlapping full-day vacation requests
+        if (type === 'VACATION' && !startTime && !endTime) {
+            const overlapping = await db.query.leaveRequests.findFirst({
+                where: sql`
+                    ${leaveRequests.userId} = ${session.user.id} AND
+                    ${leaveRequests.type} = 'VACATION' AND
+                    ${leaveRequests.status} != 'REJECTED' AND
+                    (
+                        (${leaveRequests.startDate} <= ${endDate} AND ${leaveRequests.endDate} >= ${startDate})
+                    )
+                `
+            });
+
+            if (overlapping) {
+                return NextResponse.json(
+                    { error: 'Hai già preso ferie per questo giorno' },
+                    { status: 400 }
+                );
+            }
+        }
+
         // Create leave request — auto-approved, no manual approval needed
         const [newRequest] = await db.insert(leaveRequests).values({
             userId: session.user.id,
@@ -111,11 +133,8 @@ export async function POST(req: NextRequest) {
         }).returning();
 
         // Immediately update user balance
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-
         if (type === 'VACATION') {
-            let days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+            let days = calculateWorkingDays(startDate, endDate);
 
             // If it's a half-day vacation (both startTime and endTime are provided)
             if (startTime && endTime) {
@@ -133,7 +152,7 @@ export async function POST(req: NextRequest) {
                 const [eh, em] = endTime.split(':').map(Number);
                 hours = Math.max(0, (eh * 60 + em - (sh * 60 + sm)) / 60);
             } else {
-                const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                const days = calculateWorkingDays(startDate, endDate);
                 hours = days * 8;
             }
             await db

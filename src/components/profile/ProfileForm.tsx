@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,12 +6,13 @@ import { useRouter } from 'next/navigation';
 import { User } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
 import { Loader2, Save, User as UserIcon, Check, KeyRound, AlertTriangle } from 'lucide-react';
-import Image from 'next/image';
 import { USER_COLORS } from '@/lib/colors';
 import { changeUserPassword } from '@/lib/actions/auth';
+import { useCurrentUser } from '@/hooks/useData';
 
 interface ProfileFormProps {
     user: User;
@@ -21,6 +21,7 @@ interface ProfileFormProps {
 export default function ProfileForm({ user }: ProfileFormProps) {
     const router = useRouter();
     const { update } = useSession();
+    const { mutateCurrentUser } = useCurrentUser();
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: user.name || '',
@@ -70,7 +71,10 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 body: JSON.stringify(formData),
             });
 
-            if (!res.ok) throw new Error('Failed to update profile');
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || 'Errore durante l\'aggiornamento del profilo');
+            }
 
             const updatedUser = await res.json();
 
@@ -79,9 +83,12 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 ...updatedUser
             });
 
+            await mutateCurrentUser(); // Update SWR cache
+            alert('Profilo aggiornato con successo! 🎉');
             router.refresh();
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
+            alert(error.message || 'Errore durante l\'aggiornamento del profilo');
         } finally {
             setIsLoading(false);
         }
@@ -150,11 +157,10 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                     <CardContent className="space-y-6">
                         <div className="flex justify-center">
                             <div className="relative w-32 h-32 rounded-full overflow-hidden ring-4 ring-gray-100 dark:ring-gray-800 shadow-md">
-                                <Image
+                                <img
                                     src={formData.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(formData.name)}`}
                                     alt="Avatar Preview"
-                                    fill
-                                    className="object-cover"
+                                    className="w-full h-full object-cover"
                                 />
                             </div>
                         </div>
@@ -297,11 +303,16 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Dipartimento</label>
-                                <Input
+                                <Select
                                     value={formData.department}
                                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                                    placeholder="es. Engineering"
-                                />
+                                >
+                                    <option value="">-- Seleziona dipartimento --</option>
+                                    <option value="Data Management">Data Management</option>
+                                    <option value="Digital">Digital</option>
+                                    <option value="Corporate">Corporate</option>
+                                    <option value="Innovation">Innovation</option>
+                                </Select>
                             </div>
                         </div>
 

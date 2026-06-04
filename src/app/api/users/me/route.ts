@@ -12,9 +12,50 @@ const updateProfileSchema = z.object({
     department: z.string().optional(),
     bio: z.string().optional(),
     phoneNumber: z.string().optional(),
-    avatarUrl: z.string().url().optional().or(z.literal('')),
+    avatarUrl: z.string().optional().or(z.literal('')),
     themeColor: z.string().optional(),
+    vacationDaysTotal: z.number().optional(),
 });
+
+export async function GET() {
+    try {
+        const session = await auth();
+
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
+        }
+
+        const user = await db.query.users.findFirst({
+            where: eq(users.id, session.user.id),
+            columns: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                avatarUrl: true,
+                jobTitle: true,
+                department: true,
+                bio: true,
+                phoneNumber: true,
+                vacationDaysTotal: true,
+                vacationDaysUsed: true,
+                personalHoursTotal: true,
+                personalHoursUsed: true,
+                themeColor: true,
+            },
+        });
+
+        if (!user) {
+            return NextResponse.json({ error: 'Utente non trovato' }, { status: 404 });
+        }
+
+        return NextResponse.json(user);
+    } catch (error) {
+        console.error('Error fetching profile:', error);
+        return NextResponse.json({ error: 'Errore interno del server' }, { status: 500 });
+    }
+}
 
 export async function PATCH(req: NextRequest) {
     try {
@@ -37,6 +78,7 @@ export async function PATCH(req: NextRequest) {
                 ...(validatedData.phoneNumber !== undefined && { phoneNumber: validatedData.phoneNumber }),
                 ...(validatedData.avatarUrl !== undefined && { avatarUrl: validatedData.avatarUrl === '' ? null : validatedData.avatarUrl }),
                 ...(validatedData.themeColor !== undefined && { themeColor: validatedData.themeColor }),
+                ...(validatedData.vacationDaysTotal !== undefined && { vacationDaysTotal: validatedData.vacationDaysTotal }),
                 updatedAt: new Date(),
             })
             .where(eq(users.id, session.user.id))

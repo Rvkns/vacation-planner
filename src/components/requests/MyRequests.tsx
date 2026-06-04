@@ -9,15 +9,18 @@ import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { Badge } from '@/components/ui/Badge';
 import { Plus, Trash2, Calendar } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { LeaveRequest, LeaveType, CreateLeaveRequest } from '@/types';
+import { useLeaveRequests, useUsers } from '@/hooks/useData';
 
 export default function MyRequests() {
     const { data: session } = useSession();
     const currentUser = session?.user;
-    const [requests, setRequests] = useState<LeaveRequest[]>([]);
+    const { leaveRequests: allRequests, isLoading, mutateLeaveRequests } = useLeaveRequests();
+    const { mutateUsers } = useUsers(); // Need this if user balance changes
+
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState<CreateLeaveRequest>({
         startDate: '',
@@ -26,21 +29,12 @@ export default function MyRequests() {
         reason: '',
     });
 
-    useEffect(() => {
-        const fetchRequests = async () => {
-            if (!currentUser) return;
-
-            try {
-                const data = await leaveService.getRequestsByUserId(currentUser.id);
-                // Assuming data needs to be sorted as in the original loadRequests
-                setRequests(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-            } catch (error) {
-                console.error('Error fetching requests:', error);
-            }
-        };
-
-        fetchRequests();
-    }, [currentUser]);
+    const requests = useMemo(() => {
+        if (!currentUser) return [];
+        return allRequests
+            .filter(r => r.userId === currentUser.id)
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }, [allRequests, currentUser]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -57,12 +51,13 @@ export default function MyRequests() {
             };
 
             const created = await leaveService.createRequest(currentUser.id, newRequest);
-            setRequests([created, ...requests]);
+            await mutateLeaveRequests();
+            await mutateUsers();
             setShowForm(false);
             setFormData({ startDate: '', endDate: '', type: 'VACATION', reason: '' });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error creating request:', error);
-            alert('Errore durante la creazione della richiesta');
+            alert(error.message || 'Errore durante la creazione della richiesta');
         }
     };
 
@@ -72,7 +67,8 @@ export default function MyRequests() {
         try {
             const success = await leaveService.deleteRequest(requestId);
             if (success) {
-                setRequests(requests.filter(r => r.id !== requestId));
+                await mutateLeaveRequests();
+                await mutateUsers();
             }
         } catch (error) {
             console.error('Error deleting request:', error);
