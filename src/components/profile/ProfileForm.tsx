@@ -9,10 +9,11 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
-import { Loader2, Save, User as UserIcon, Check, KeyRound, AlertTriangle } from 'lucide-react';
+import { Loader2, Save, User as UserIcon, Check, KeyRound, AlertTriangle, Sparkles } from 'lucide-react';
 import { USER_COLORS } from '@/lib/colors';
 import { changeUserPassword } from '@/lib/actions/auth';
 import { useCurrentUser } from '@/hooks/useData';
+import AvatarSelectorModal from '@/components/profile/AvatarSelectorModal';
 
 interface ProfileFormProps {
     user: User;
@@ -23,6 +24,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     const { update } = useSession();
     const { mutateCurrentUser } = useCurrentUser();
     const [isLoading, setIsLoading] = useState(false);
+    const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         name: user.name || '',
         avatarUrl: user.avatarUrl || '',
@@ -166,15 +168,27 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                         </div>
 
                         <div className="flex flex-col items-center gap-4">
-                            <Button variant="outline" className="relative w-full" type="button">
-                                Carica Foto
-                                <input
-                                    type="file"
-                                    className="absolute inset-0 opacity-0 cursor-pointer"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                />
-                            </Button>
+                            <div className="grid grid-cols-2 gap-3 w-full">
+                                <Button 
+                                    variant="outline" 
+                                    className="w-full bg-rose-50 hover:bg-rose-100 border-rose-200 text-rose-700 dark:bg-rose-950/20 dark:hover:bg-rose-950/40 dark:border-rose-900 dark:text-rose-400"
+                                    type="button"
+                                    onClick={() => setIsAvatarModalOpen(true)}
+                                >
+                                    <Sparkles className="mr-2 h-4 w-4" />
+                                    Scegli Avatar
+                                </Button>
+
+                                <Button variant="outline" className="relative w-full" type="button">
+                                    Carica Foto
+                                    <input
+                                        type="file"
+                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                    />
+                                </Button>
+                            </div>
 
                             <div className="relative w-full">
                                 <div className="absolute inset-0 flex items-center">
@@ -376,6 +390,14 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                     </form>
                 </CardContent>
             </Card>
+
+            <AvatarSelectorModal
+                isOpen={isAvatarModalOpen}
+                onClose={() => setIsAvatarModalOpen(false)}
+                onSelect={(url) => setFormData({ ...formData, avatarUrl: url })}
+                currentAvatarUrl={formData.avatarUrl}
+                userName={formData.name}
+            />
         </div>
     );
 }
