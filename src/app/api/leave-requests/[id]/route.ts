@@ -33,8 +33,8 @@ export async function DELETE(
             );
         }
 
-        // Only the owner can delete their own request
-        if (request.userId !== session.user.id) {
+        // Only the owner can delete their own request, unless the caller is an ADMIN
+        if (request.userId !== session.user.id && session.user.role !== 'ADMIN') {
             return NextResponse.json(
                 { error: 'Non autorizzato a eliminare questa richiesta' },
                 { status: 403 }

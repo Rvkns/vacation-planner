@@ -17,8 +17,8 @@ import Modal from '@/components/ui/Modal';
 export default function TeamRequests() {
     const { data: session } = useSession();
     const currentUser = session?.user;
-    const { users: allUsers, isLoading: isLoadingUsers } = useUsers();
-    const { leaveRequests: allRequestsRaw, isLoading: isLoadingRequests } = useLeaveRequests();
+    const { users: allUsers, isLoading: isLoadingUsers, mutateUsers } = useUsers();
+    const { leaveRequests: allRequestsRaw, isLoading: isLoadingRequests, mutateLeaveRequests } = useLeaveRequests();
 
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
@@ -125,8 +125,30 @@ Aggiunto tramite VacaPlanner`;
         link.setAttribute('download', `${typeLabel.toLowerCase()}_${userName.toLowerCase().replace(/\s+/g, '_')}.ics`);
         document.body.appendChild(link);
         link.click();
-        document.body.removeChild(link);
     };
+
+
+    const handleDeleteRequest = async (requestId: string) => {
+        if (!confirm("Sei sicuro di voler eliminare questa richiesta? L'azione rimborserà le ore/giorni all'utente.")) {
+            return;
+        }
+        
+        try {
+            const success = await leaveService.deleteRequest(requestId);
+            if (success) {
+                alert('Richiesta eliminata con successo.');
+                setSelectedRequest(null);
+                await mutateLeaveRequests();
+                await mutateUsers();
+            } else {
+                alert("Errore durante l'eliminazione della richiesta.");
+            }
+        } catch (error) {
+            console.error('Error deleting request:', error);
+            alert('Errore di connessione o errore imprevisto.');
+        }
+    };
+
 
 
     const allRequests = useMemo(() => {
@@ -472,6 +494,26 @@ Aggiunto tramite VacaPlanner`;
                                     </button>
                                 </div>
                             </div>
+
+                            {/* Admin actions block */}
+                            {currentUser?.role === 'ADMIN' && (
+                                <div className="space-y-3 pt-4 border-t border-red-100 dark:border-red-950/30">
+                                    <h4 className="text-sm font-bold text-red-650 dark:text-red-400 flex items-center gap-2">
+                                        <XCircle className="w-4 h-4 text-red-650" />
+                                        Azioni Amministratore
+                                    </h4>
+                                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                                        In qualità di amministratore, puoi annullare ed eliminare questa richiesta in caso di errore. I giorni/ore verranno rimborsati sul saldo dell'utente.
+                                    </p>
+                                    <button
+                                        onClick={() => handleDeleteRequest(selectedRequest.id)}
+                                        className="flex items-center justify-center gap-2 w-full bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-950/20 dark:hover:bg-red-950/40 dark:text-red-400 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors border border-red-200 dark:border-red-900"
+                                        title="Elimina definitivamente la richiesta"
+                                    >
+                                        Annulla ed Elimina Richiesta
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     );
                 })()}
