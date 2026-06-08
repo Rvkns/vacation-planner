@@ -68,50 +68,7 @@ Aggiunto tramite VacaPlanner`;
         return `https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&subject=${subject}&startdt=${start}&enddt=${end}&body=${body}`;
     };
 
-    const generateGoogleLink = (req: LeaveRequest, userName: string) => {
-        let start = `${req.startDate.replace(/-/g, '')}T090000`;
-        let end = `${req.endDate.replace(/-/g, '')}T180000`;
 
-        const isPersonalHourly = req.type === 'PERSONAL' && req.startTime && req.endTime;
-
-        if (req.type === 'VACATION') {
-            if (req.startTime === '09:00' && req.endTime === '13:00') {
-                end = `${req.startDate.replace(/-/g, '')}T130000`;
-            } else if (req.startTime === '14:00' && req.endTime === '18:00') {
-                start = `${req.startDate.replace(/-/g, '')}T140000`;
-                end = `${req.startDate.replace(/-/g, '')}T180000`;
-            }
-        } else {
-            if (req.startTime) {
-                start = `${req.startDate.replace(/-/g, '')}T${req.startTime.replace(':', '')}00`;
-            }
-            if (req.endTime) {
-                end = `${req.endDate.replace(/-/g, '')}T${req.endTime.replace(':', '')}00`;
-            }
-        }
-
-        const typeLabel = getTypeLabel(req.type);
-        const subject = encodeURIComponent(`${typeLabel} - ${userName}`);
-        
-        const dayCount = leaveService.calculateDays(req);
-        const hoursCount = isPersonalHourly ? leaveService.calculateTotalHours(req) : 0;
-        const durationStr = isPersonalHourly 
-            ? `${hoursCount} ore (${req.startTime} - ${req.endTime})`
-            : `${dayCount} giorn${dayCount === 1 ? 'o' : 'i'}`;
-
-        const bodyText = `Dettagli Assenza:
-Dipendente: ${userName}
-Tipo: ${typeLabel}
-Periodo: dal ${format(new Date(req.startDate), 'dd/MM/yyyy')} al ${format(new Date(req.endDate), 'dd/MM/yyyy')}
-Durata: ${durationStr}
-${req.reason ? `Motivazione: ${req.reason}` : ''}
-${req.handoverNotes ? `Note di Handover: ${req.handoverNotes}` : ''}
-
-Aggiunto tramite VacaPlanner`;
-        const body = encodeURIComponent(bodyText);
-        
-        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${subject}&dates=${start}/${end}&details=${body}`;
-    };
 
     const handleDownloadICS = (req: LeaveRequest, userName: string) => {
         let start = `${req.startDate.replace(/-/g, '')}T090000`;
@@ -500,30 +457,20 @@ Aggiunto tramite VacaPlanner`;
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="flex items-center justify-center gap-2 bg-[#0078D4]/10 text-[#0078D4] hover:bg-[#0078D4]/20 hover:text-[#0078D4] dark:bg-[#0078D4]/20 dark:hover:bg-[#0078D4]/30 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
-                                        title="Pianifica in Outlook"
+                                        title="Pianifica in Outlook / Teams"
                                     >
                                         <ExternalLink className="w-4 h-4" />
-                                        Outlook Calendar
+                                        Outlook / Teams
                                     </a>
-                                    <a
-                                        href={generateGoogleLink(selectedRequest, user.name)}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-center gap-2 bg-[#34A853]/10 text-[#34A853] hover:bg-[#34A853]/20 hover:text-[#34A853] dark:bg-[#34A853]/20 dark:hover:bg-[#34A853]/30 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
-                                        title="Pianifica in Google Calendar"
+                                    <button
+                                        onClick={() => handleDownloadICS(selectedRequest, user.name)}
+                                        className="flex items-center justify-center gap-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-300 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+                                        title="Scarica file .ics standard"
                                     >
-                                        <ExternalLink className="w-4 h-4" />
-                                        Google Calendar
-                                    </a>
+                                        <Download className="w-4 h-4" />
+                                        Scarica Evento (.ics)
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={() => handleDownloadICS(selectedRequest, user.name)}
-                                    className="flex items-center justify-center gap-2 w-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-300 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
-                                    title="Scarica file .ics standard"
-                                >
-                                    <Download className="w-4 h-4" />
-                                    Scarica File Evento (.ics)
-                                </button>
                             </div>
                         </div>
                     );

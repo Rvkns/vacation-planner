@@ -132,14 +132,13 @@ export default function WikiPage() {
                     </div>
                     <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20 space-y-3">
                         <h4 className="font-bold flex items-center gap-2 text-[#0078D4] mb-1">
-                            <CalendarDays className="w-4 h-4" /> Sincronizzazione Calendario Multiplo
+                            <CalendarDays className="w-4 h-4" /> Sincronizzazione Calendario
                         </h4>
                         <p className="text-sm">
-                            VacaPlanner include un'integrazione intelligente con **Outlook Calendar** e **Google Calendar**, oltre al supporto per file standard **.ics**:
+                            VacaPlanner include un'integrazione con **Outlook / Teams Calendar**, oltre al supporto per file standard **.ics**:
                         </p>
                         <ul className="list-disc list-inside text-xs space-y-1 pl-2">
-                            <li><strong>Pianifica in Outlook</strong>: Apre una scheda precompilata su Outlook Web.</li>
-                            <li><strong>Pianifica in Google</strong>: Genera una scheda precompilata per Google Calendar.</li>
+                            <li><strong>Pianifica in Outlook / Teams</strong>: Apre una scheda precompilata su Outlook Web.</li>
                             <li><strong>Scarica file .ics</strong>: Scarica l'evento in formato universale per client desktop o mobili (es. Apple Calendar o Outlook Client).</li>
                         </ul>
                         <p className="text-xs pt-1 border-t border-blue-500/10">

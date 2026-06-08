@@ -62,11 +62,10 @@ Di seguito l'elenco dei campi principali della tabella `users` interessati dalla
 
 ---
 
-## 📅 Sincronizzazione Calendario (Outlook / Google / ICS)
+## 📅 Sincronizzazione Calendario (Outlook / ICS)
 
 Nelle schermate di gestione ed esplorazione delle richieste del team:
-- **Pulsante Outlook**: Genera un link diretto per pianificare l'assenza sul calendario aziendale Outlook Web.
-- **Pulsante Google**: Genera un link precompilato per salvare l'evento sul proprio calendario Google Calendar personale.
+- **Pulsante Outlook / Teams**: Genera un link diretto per pianificare l'assenza sul calendario aziendale Outlook Web / Teams.
 - **File .ics standard**: Consente di esportare l'evento come file di calendario standard da importare in qualsiasi client desktop o mobile.
 - **Dettaglio Richiesta**: Cliccando su qualsiasi richiesta in "Richieste Team", si aprirà un Modal interattivo da cui è possibile visualizzare tutti i dettagli (inclusi handover e motivazioni) ed accedere ai pulsanti di sincronizzazione.
 
