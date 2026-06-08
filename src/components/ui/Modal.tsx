@@ -42,11 +42,10 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
-
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="glass-modal rounded-2xl w-full max-w-lg overflow-hidden pointer-events-auto"
+                            className="glass-modal rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden pointer-events-auto"
                         >
-                            <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-800">
+                            <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-800 shrink-0">
                                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                                     {title}
                                 </h2>
@@ -57,7 +56,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
-                            <div className="p-6">
+                            <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
                                 {children}
                             </div>
                         </motion.div>
