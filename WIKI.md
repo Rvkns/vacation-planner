@@ -59,3 +59,24 @@ Di seguito l'elenco dei campi principali della tabella `users` interessati dalla
 - **NextAuth.js v5**: Gestione sicura delle sessioni tramite JWT criptati e firmati.
 - **bcryptjs**: Algoritmo di hashing forte per la memorizzazione non reversibile delle password nel database.
 - **Next.js Middleware**: Protezione delle rotte lato server prima del rendering della pagina per evitare bypass tramite URL.
+
+---
+
+## 📅 Sincronizzazione Calendario (Outlook / Google / ICS)
+
+Nelle schermate di gestione ed esplorazione delle richieste del team:
+- **Pulsante Outlook**: Genera un link diretto per pianificare l'assenza sul calendario aziendale Outlook Web.
+- **Pulsante Google**: Genera un link precompilato per salvare l'evento sul proprio calendario Google Calendar personale.
+- **File .ics standard**: Consente di esportare l'evento come file di calendario standard da importare in qualsiasi client desktop o mobile.
+- **Dettaglio Richiesta**: Cliccando su qualsiasi richiesta in "Richieste Team", si aprirà un Modal interattivo da cui è possibile visualizzare tutti i dettagli (inclusi handover e motivazioni) ed accedere ai pulsanti di sincronizzazione.
+
+---
+
+## 📊 Piano Ferie Reparti (Visualizzazione Tabellare)
+
+Il portale include una vista tabellare in stile Gantt/Excel per la pianificazione mensile:
+- **Griglia Mensile**: Mostra tutti i membri di un reparto specifico o di tutti i reparti (`ALL`) per il mese selezionato.
+- **Colori e Simboli**: Identificazione immediata delle tipologie di assenza (Ferie `F`, Permesso `P` o orario es. `2h`, Malattia `M`), dei weekend e delle festività nazionali italiane.
+- **Esportazione Excel (CSV)**: Genera un file CSV compatibile con Excel italiano (separato da `;` e codificato in UTF-8 BOM).
+- **Esportazione PDF**: Formattazione orizzontale (Landscape) pronta per la stampa tramite `window.print()`, ottimizzata per rimuovere elementi superflui del sito (come la barra laterale).
+

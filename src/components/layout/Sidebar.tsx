@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession, signOut } from 'next-auth/react';
-import { CalendarDays, FileText, Users, LogOut, Menu, X, User as UserIcon, BarChart3, Settings, BookOpen } from 'lucide-react';
+import { CalendarDays, FileText, Users, LogOut, Menu, X, User as UserIcon, BarChart3, Settings, BookOpen, Table } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -14,11 +14,13 @@ const navigation = [
     { name: 'Dashboard', href: '/', icon: CalendarDays },
     { name: 'Le mie richieste', href: '/my-requests', icon: FileText },
     { name: 'Richieste team', href: '/team-requests', icon: Users },
+    { name: 'Piano Ferie Reparti', href: '/department-leaves', icon: Table },
     { name: 'Analytics & Riepilogo', href: '/analytics', icon: BarChart3 },
     { name: 'Profilo', href: '/profile', icon: UserIcon },
     { name: 'Gestione Utenti', href: '/admin/users', icon: Settings, adminOnly: true },
     { name: 'Wiki & Guida', href: '/wiki', icon: BookOpen },
 ];
+
 
 export default function Sidebar() {
     const { data: session } = useSession();

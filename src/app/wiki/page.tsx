@@ -15,7 +15,8 @@ import {
     CalendarDays,
     ArrowRight,
     Sparkles,
-    Eye
+    Eye,
+    Table
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -116,7 +117,7 @@ export default function WikiPage() {
         },
         {
             id: 'outlook-handover',
-            title: '📝 Note di Handover e Sync Outlook',
+            title: '📝 Note di Handover e Sync Calendari',
             description: 'L\'importanza del passaggio consegne e come sincronizzare i calendari.',
             icon: CalendarDays,
             category: 'user',
@@ -129,16 +130,20 @@ export default function WikiPage() {
                             permette di inserire deleghe, collocazione di chiavi, stato dei ticket aperti o note urgenti. Sarà visibile a tutti i colleghi cliccando sul tuo nome nel calendario della Dashboard.
                         </p>
                     </div>
-                    <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                    <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20 space-y-3">
                         <h4 className="font-bold flex items-center gap-2 text-[#0078D4] mb-1">
-                            <CalendarDays className="w-4 h-4" /> Sincronizzazione Outlook
+                            <CalendarDays className="w-4 h-4" /> Sincronizzazione Calendario Multiplo
                         </h4>
                         <p className="text-sm">
-                            VacaPlanner include un'integrazione intelligente con **Outlook Calendar**. All'interno del modulo di richiesta, 
-                            troverai un pulsante azzurro **"Pianifica in Outlook"**:
+                            VacaPlanner include un'integrazione intelligente con **Outlook Calendar** e **Google Calendar**, oltre al supporto per file standard **.ics**:
                         </p>
-                        <p className="text-xs mt-1">
-                            Cliccando su questo pulsante prima o dopo l'invio della richiesta, si aprirà una nuova scheda di Outlook Web precompilata con tutti i dettagli (giorni, ore, e titolo dell'assenza) per permetterti di salvare istantaneamente l'evento sul tuo calendario aziendale con un solo clic.
+                        <ul className="list-disc list-inside text-xs space-y-1 pl-2">
+                            <li><strong>Pianifica in Outlook</strong>: Apre una scheda precompilata su Outlook Web.</li>
+                            <li><strong>Pianifica in Google</strong>: Genera una scheda precompilata per Google Calendar.</li>
+                            <li><strong>Scarica file .ics</strong>: Scarica l'evento in formato universale per client desktop o mobili (es. Apple Calendar o Outlook Client).</li>
+                        </ul>
+                        <p className="text-xs pt-1 border-t border-blue-500/10">
+                            *Novità*: Puoi cliccare su qualsiasi scheda all'interno di **"Richieste Team"** per aprire un pannello di dettaglio e aggiungere comodamente l'assenza del tuo collega al tuo calendario personale!
                         </p>
                     </div>
                 </div>
@@ -146,14 +151,14 @@ export default function WikiPage() {
         },
         {
             id: 'gestione-team',
-            title: '👥 Funzioni Manager e Approvazioni',
+            title: '👥 Funzioni Manager e Piano Ferie Reparti',
             description: 'La panoramica delle funzionalità dedicate a Manager e Amministratori.',
             icon: Shield,
             category: 'manager',
             content: (
                 <div className="space-y-4 text-neutral-600 dark:text-neutral-300">
                     <p>
-                        Gli utenti con ruolo **MANAGER** o **ADMIN** hanno accesso a visualizzazioni e controlli esclusivi per facilitare la coordinazione del team.
+                        Gli utenti con ruolo **MANAGER** o **ADMIN** (ma anche i dipendenti per scopi di coordinazione) hanno accesso a visualizzazioni e controlli esclusivi per facilitare la sincronizzazione delle attività di reparto.
                     </p>
                     <div className="space-y-3">
                         <div className="flex gap-3 items-start">
@@ -163,6 +168,15 @@ export default function WikiPage() {
                             <div>
                                 <h5 className="font-semibold text-neutral-900 dark:text-white">Richieste Team</h5>
                                 <p className="text-sm">Consente di monitorare in tempo reale tutte le richieste attive dei dipendenti, con filtri per stato (Approvato, In Attesa, Rifiutato) ed eliminazione/gestione in caso di pianificazioni errate.</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 items-start">
+                            <div className="p-2 rounded-lg bg-red-500/10 text-red-500 mt-1">
+                                <Table className="w-4 h-4" />
+                            </div>
+                            <div>
+                                <h5 className="font-semibold text-neutral-900 dark:text-white">Piano Ferie Reparti</h5>
+                                <p className="text-sm">Una vista tabellare interattiva stile Gantt/Excel che organizza le assenze mensili per reparto. Consente di esportare un report in formato <strong>Excel (CSV)</strong> ed è ottimizzata per la stampa diretta o il salvataggio in <strong>PDF</strong> tramite layout orizzontale.</p>
                             </div>
                         </div>
                         <div className="flex gap-3 items-start">
